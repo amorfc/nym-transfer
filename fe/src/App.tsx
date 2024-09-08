@@ -3,7 +3,6 @@
 import {
   createNymMixnetClient,
   NymMixnetClient,
-  Payload,
 } from "@nymproject/sdk-full-fat";
 import { useCallback, useEffect, useState } from "react";
 
@@ -77,7 +76,9 @@ function App() {
           placeholder="Message to Send"
           onChange={(e) => setRecipient(e.target.value)}
         />
-        <button onClick={send}>Send</button>
+        <div>
+          <button onClick={send}>Send</button>
+        </div>
         <div>
           {receivedMessage && <h2>Received Message: {receivedMessage}</h2>}
         </div>
