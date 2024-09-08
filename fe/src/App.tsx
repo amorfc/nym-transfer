@@ -74,7 +74,7 @@ function App() {
         <input
           value={messageText ?? ""}
           placeholder="Message to Send"
-          onChange={(e) => setRecipient(e.target.value)}
+          onChange={(e) => setMessageText(e.target.value)}
         />
         <div>
           <button onClick={send}>Send</button>
