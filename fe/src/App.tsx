@@ -10,12 +10,12 @@ import "./App.css";
 import NymScreenWrapper from "@/components/screen/NymScreenWrapper";
 import NymButton from "@/components/common/NymButton";
 import NymFlexContainer from "@/components/common/NymFlexContainer";
-import { Typography } from "antd";
+import { Typography, notification } from "antd";
 import TextArea from "antd/es/input/TextArea";
+import { IconType } from "antd/es/notification/interface";
 
 const nymApiUrl = "https://validator.nymtech.net/api";
-const recipentAddress =
-  "9w19H8Bm5mYuEVFzr7bXyamqq3KgZV4T7wkRJfBhkx2z.Bxtv76qmin6mdAMbUR1rsDMxDztC1wjausv2LuM4zk1b@6amXvGQR81fuHz9qgWhLBDLZoXwWxAvLb2Tw2PciNS2p";
+
 function App() {
   const [nym, setNym] = useState<NymMixnetClient>();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
@@ -24,6 +24,7 @@ function App() {
   const [selfAddress, setSelfAddress] = useState<string>();
   const [messageText, setMessageText] = useState<string>("");
   const [receivedMessage, setReceivedMessage] = useState<string>();
+  const [recipentAddress, setRecipentAdress] = useState<string | null>();
 
   const init = useCallback(async () => {
     setIsConnecting(true);
@@ -41,6 +42,7 @@ function App() {
         if (e.kind == EventKinds.Connected) {
           setIsConnecting(false);
           setIsConnected(true);
+          showNotification("Connected to Nym Mixnet", "success");
         }
 
         const { address } = e.args;
@@ -49,14 +51,17 @@ function App() {
 
       client?.events.subscribeToLoaded((e) => {
         console.log("Client ready: ", e.args);
+        showNotification("Client ready to loaded", "success");
       });
 
       client?.events.subscribeToTextMessageReceivedEvent((e) => {
         console.log(e.args.payload);
         setReceivedMessage(e.args.payload);
+        showNotification(`Message received ${JSON.stringify(e)}`, "info");
       });
     } catch (error) {
-      console.error("Failed to start client Onur", error);
+      showNotification(`Failed to start client ${error}`, "error");
+      console.error("Failed to start client", error);
     }
   }, []);
 
@@ -64,6 +69,7 @@ function App() {
     try {
       await nym?.client.stop();
     } catch (error) {
+      showNotification(`Failed to stop client ${error}`, "error");
       console.error("Failed to stop client", error);
     } finally {
       setIsConnected(false);
@@ -71,6 +77,10 @@ function App() {
   }, [nym]);
 
   const send = async () => {
+    if (!recipentAddress) {
+      showNotification("Please enter a recipient address", "error");
+      return;
+    }
     setUploading(true);
 
     try {
@@ -82,11 +92,22 @@ function App() {
         recipient: recipentAddress,
       });
     } catch (error) {
+      showNotification(`Failed to send message ${error}`, "error");
       console.error("Failed to send message", error);
     } finally {
       setUploading(false);
     }
     //  `send` method not `rawSend` method
+  };
+
+  const showNotification = (message: string, type: IconType = "info") => {
+    notification.open({
+      message: type.toUpperCase(),
+      description: message,
+      type,
+      showProgress: true,
+      pauseOnHover: true,
+    });
   };
 
   const spaceY = 12;
@@ -108,9 +129,13 @@ function App() {
           </NymFlexContainer>
           <NymFlexContainer vertical>
             <Typography.Title level={4} type="danger">
-              Recipient
+              Recipient {isConnected ? "✅" : "❌"}
             </Typography.Title>
-            <Typography.Text type="warning">{recipentAddress}</Typography.Text>
+            {isConnected && (
+              <Typography.Text type="warning">
+                {recipentAddress}
+              </Typography.Text>
+            )}
           </NymFlexContainer>
         </NymFlexContainer>
         <NymFlexContainer
@@ -121,6 +146,10 @@ function App() {
           <TextArea
             placeholder="Message"
             onChange={(e) => setMessageText(e.target.value)}
+          />
+          <TextArea
+            placeholder="Recipent Address"
+            onChange={(e) => setRecipentAdress(e.target.value)}
           />
           <NymButton type="primary" onClick={send} loading={uploading}>
             Send
