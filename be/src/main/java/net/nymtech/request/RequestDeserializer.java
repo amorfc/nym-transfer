@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 public final class RequestDeserializer {
 
   private static final int SIZE_REQUEST_ID = 16;
-  private static final int SIZE_REQUEST_TYPE = 16;
+  private static final int SIZE_REQUEST_TYPE = 1;
   private static final int ASCII_DECIMAL_CARRIAGE_RETURN = 13;
   private static final int ASCII_DECIMAL_NEW_LINE = 10;
 
