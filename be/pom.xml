@@ -21,6 +21,7 @@
     <version.jackson-databind>2.17.2</version.jackson-databind>
     <version.maven-assembly-plugin>3.3.0</version.maven-assembly-plugin>
     <version.junit>5.11.0</version.junit>
+    <version.assertj>3.26.3</version.assertj>
   </properties>
 
   <dependencies>
@@ -58,6 +59,12 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${version.assertj}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
