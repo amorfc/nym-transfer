@@ -1,4 +1,4 @@
-package net.nymtech;
+package net.nymtech.request;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

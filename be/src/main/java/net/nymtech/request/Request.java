@@ -1,9 +1,12 @@
-package net.nymtech;
+package net.nymtech.request;
 
 import java.util.UUID;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+/**
+ * Represents the message format for the requests that are sent through NYM Mixnet.
+ */
 public record Request(UUID id, Request.Type type, byte[] content) {
 
   @Getter

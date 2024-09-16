@@ -1,4 +1,4 @@
-package net.nymtech;
+package net.nymtech.request;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -6,6 +6,11 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Deserializer for incoming requests through NYM Mixnet.
+ * 
+ * @author Onur Kayabasi(o.kayabasi@outlook.com)
+ */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RequestDeserializer {
 
@@ -14,7 +19,14 @@ public final class RequestDeserializer {
   private static final int ASCII_DECIMAL_CARRIAGE_RETURN = 13;
   private static final int ASCII_DECIMAL_NEW_LINE = 10;
 
-  static Request deserialize(ByteBuffer message) {
+  /**
+   * Converts the given {@code message} bytes to {@code Request} object.
+   * 
+   * @param message bytes to convert from
+   * @return deserialized request
+   * @throws IllegalArgumentException if given {@code message} has invalid format
+   */
+  public final static Request deserialize(ByteBuffer message) {
     int offset = findOffset(message);
     if (offset == -1) {
       throw new IllegalArgumentException("Offset couldn't be extracted!");
