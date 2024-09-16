@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 final class RequestDeserializerTest {
 
-  private static ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void should_Deserialize_Given_ByteBuffer() throws IOException {

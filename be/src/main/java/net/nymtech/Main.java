@@ -29,9 +29,9 @@ final class Main {
     }
   }
 
-  void stop() throws InterruptedException {
+  void stop() {
     log.info("Server is being stopped...");
-    runningLatch.await();
+    runningLatch.countDown();
   }
 
 }
