@@ -1,5 +1,6 @@
 package net.nymtech.request;
 
+import java.util.Arrays;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -26,6 +27,12 @@ public record Request(UUID id, Request.Type type, byte[] content) {
         default -> null;
       };
     }
+  }
+
+  @Override
+  public String toString() {
+    return "Request [id=%s, type=%s, content=%s]".formatted(id, type.name(),
+        Arrays.toString(content));
   }
 
 }
