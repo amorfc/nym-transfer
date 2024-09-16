@@ -5,6 +5,7 @@ Backend application that serves to the requests come through NYM Mixnet.
 ## Prerequisites
 
 - NYM Client that runs at port `1977`
+- Maven 3.8.5 or newer
 - JDK 21
 
 
