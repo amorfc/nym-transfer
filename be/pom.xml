@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +17,8 @@
     <maven.compiler.target>21</maven.compiler.target>
     <version.log4j-bom>2.22.1</version.log4j-bom>
     <version.lombok>1.18.32</version.lombok>
+    <version.jakarta-websocket>2.2.0</version.jakarta-websocket>
+    <version.jackson-databind>2.17.2</version.jackson-databind>
     <version.maven-assembly-plugin>3.3.0</version.maven-assembly-plugin>
     <version.junit>5.11.0</version.junit>
   </properties>
@@ -35,6 +38,23 @@
       <version>${version.lombok}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>jakarta.websocket</groupId>
+      <artifactId>jakarta.websocket-client-api</artifactId>
+      <version>${version.jakarta-websocket}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.tyrus.bundles</groupId>
+      <artifactId>tyrus-standalone-client</artifactId>
+      <version>${version.jakarta-websocket}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${version.jackson-databind}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
