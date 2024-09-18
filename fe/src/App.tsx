@@ -13,6 +13,12 @@ import NymFlexContainer from "@/components/common/NymFlexContainer";
 import { Typography, notification } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { IconType } from "antd/es/notification/interface";
+import {
+  MixnetRequest,
+  MixnetRequestType,
+} from "@/service/request/MixnetRequest";
+import { MixnetRequestSerilizer } from "@/service/utils/MixnetRequestSerilizer";
+import useRecipientAddresses from "@/hooks/useRecipientAddresses";
 
 const nymApiUrl = "https://validator.nymtech.net/api";
 
@@ -25,6 +31,7 @@ function App() {
   const [messageText, setMessageText] = useState<string>("");
   const [receivedMessage, setReceivedMessage] = useState<string>();
   const [recipentAddress, setRecipentAdress] = useState<string | null>();
+  const { recipientAddresses, addRecipient } = useRecipientAddresses();
 
   const init = useCallback(async () => {
     setIsConnecting(true);
@@ -83,21 +90,26 @@ function App() {
     }
     setUploading(true);
 
+    const request = new MixnetRequest(
+      "123e4567-e89b-12d3-a456-426614174000",
+      MixnetRequestType.TYPE_A,
+      { message: messageText }
+    );
+
     try {
-      await nym?.client.send({
-        payload: {
-          message: messageText ?? "Hello Nym",
-          mimeType: "text/plain",
-        },
+      await nym?.client.rawSend({
+        payload: MixnetRequestSerilizer.serialize(request),
         recipient: recipentAddress,
       });
+
+      showNotification("Message sent", "success");
+      addRecipient(recipentAddress);
     } catch (error) {
       showNotification(`Failed to send message ${error}`, "error");
       console.error("Failed to send message", error);
     } finally {
       setUploading(false);
     }
-    //  `send` method not `rawSend` method
   };
 
   const showNotification = (message: string, type: IconType = "info") => {
@@ -149,6 +161,7 @@ function App() {
           />
           <TextArea
             placeholder="Recipent Address"
+            value={recipentAddress ?? ""}
             onChange={(e) => setRecipentAdress(e.target.value)}
           />
           <NymButton type="primary" onClick={send} loading={uploading}>
@@ -165,6 +178,17 @@ function App() {
           >
             Stop
           </NymButton>
+        </NymFlexContainer>
+        <NymFlexContainer vertical>
+          {recipientAddresses.map((address) => (
+            <NymButton
+              key={address}
+              type="text"
+              onClick={() => setRecipentAdress(address)}
+            >
+              {address}
+            </NymButton>
+          ))}
         </NymFlexContainer>
       </NymFlexContainer>
     </NymScreenWrapper>
