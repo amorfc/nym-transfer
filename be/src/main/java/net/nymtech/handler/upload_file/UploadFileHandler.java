@@ -16,32 +16,39 @@ import net.nymtech.request.Request;
 @Log4j2
 public final class UploadFileHandler implements RequestHandler {
 
+  private static final LocalFileUploader uploader = new LocalFileUploader();
+
   @NonNull
   private final ObjectMapper objectMapper;
+  @NonNull
+  private final String basePath;
   @NonNull
   private final Session session;
 
   @Override
   public void handle(Request request) {
-    log.info("{} is being processed...", request.id());
-    var content = extractContent(request);
-    if (content == null) {
-      // TODO: Send error!
-      log.info("{} processed unsuccessfully!", request.id());
-      return;
-    }
+    try {
+      log.info("{} is being processed...", request.id());
+      var content = extractContent(request);
+      var path = extractFilePath(content);
+      uploader.upload(path, content.content());
 
-    // TODO: Write file...
-    log.info("{} processed successfully!", request.id());
+      log.info("{} handled successfully!", request.id());
+    } catch (IOException e) {
+      log.error("{} couldn't be handled successfully!", request.id(), e);
+      // TODO: Send error response!
+    }
   }
 
-  private UploadFileRequest extractContent(Request request) {
-    try {
-      return objectMapper.readValue(request.content(), UploadFileRequest.class);
-    } catch (IOException e) {
-      log.error("UploadFileRequest couldn't be extracted!", e);
-      return null;
-    }
+  private UploadFileRequest extractContent(Request request) throws IOException {
+    var content = objectMapper.readValue(request.content(), UploadFileRequest.class);
+    log.debug("UploadFileRequest deserialized successfully: {}", content);
+    return content;
+  }
+
+  private String extractFilePath(UploadFileRequest content) {
+    return "%s/%s/%s".formatted(basePath, content.userId(),
+        content.title().strip().toLowerCase().replace(" ", "_"));
   }
 
 }
