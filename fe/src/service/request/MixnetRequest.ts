@@ -1,6 +1,5 @@
 export enum MixnetRequestType {
-  TYPE_A = 1,
-  TYPE_B = 2,
+  UPLOAD_FILE = 1,
 }
 
 export class MixnetRequest {
