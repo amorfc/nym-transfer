@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/hooks/useAppStore";
+import { selectNymClientState } from "@/store/slice/nymClientSlice";
 
 export const useSelectNymClient = () =>
-  useAppSelector((state) => state.nymClient);
+  useAppSelector((state) => selectNymClientState(state));

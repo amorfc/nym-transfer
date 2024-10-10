@@ -7,6 +7,7 @@ interface NymClientState {
   isConnecting: boolean;
   selfAddress: string | null;
   receivedMessage: string | null;
+  recipientAddress: string | null; // Add recipientAddress field
 }
 
 const initialState: NymClientState = {
@@ -14,6 +15,7 @@ const initialState: NymClientState = {
   isConnecting: false,
   selfAddress: null,
   receivedMessage: null,
+  recipientAddress: null,
 };
 
 const nymClientSlice = createSlice({
@@ -33,6 +35,10 @@ const nymClientSlice = createSlice({
     setReceivedMessage(state, action: PayloadAction<string | null>) {
       state.receivedMessage = action.payload;
     },
+    setRecipientAddress(state, action: PayloadAction<string | null>) {
+      // Add setRecipientAddress reducer
+      state.recipientAddress = action.payload;
+    },
     resetState() {
       return initialState;
     },
@@ -44,6 +50,7 @@ export const {
   setIsConnecting,
   setSelfAddress,
   setReceivedMessage,
+  setRecipientAddress,
   resetState,
 } = nymClientSlice.actions;
 

@@ -2,6 +2,8 @@
 import NymClientManager, {
   NymClientEventHandlers,
 } from "@/service/nym/NymClientManager";
+import { selectNymClientState } from "@/store/slice/nymClientSlice";
+import { RootState } from "@/store/store";
 import { notifySuccess, notifyWarning } from "@/utils/GlobalNotification";
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -51,6 +53,26 @@ export const nymApi = createApi({
         }
       },
     }),
+    uploadFile: builder.mutation<void, { payload: Uint8Array }>({
+      async queryFn({ payload }, { getState }) {
+        try {
+          const recipientAddress = selectNymClientState(
+            getState() as RootState
+          ).recipientAddress;
+
+          if (!recipientAddress) {
+            throw new Error("Recipient address is not set");
+          }
+
+          const nymClientManager = NymClientManager.getInstance();
+          await nymClientManager.sendMessage(recipientAddress, payload);
+
+          return { data: undefined };
+        } catch (error) {
+          return { error };
+        }
+      },
+    }),
   }),
 });
 
@@ -58,4 +80,5 @@ export const {
   useInitClientMutation,
   useStopClientMutation,
   useSendMessageMutation,
+  useUploadFileMutation,
 } = nymApi;
