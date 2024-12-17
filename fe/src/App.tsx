@@ -1,126 +1,144 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  createNymMixnetClient,
-  EventKinds,
-  NymMixnetClient,
-} from "@nymproject/sdk-full-fat";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import NymScreenWrapper from "@/components/screen/NymScreenWrapper";
 import NymButton from "@/components/common/NymButton";
 import NymFlexContainer from "@/components/common/NymFlexContainer";
-import { Typography, notification } from "antd";
+import { Typography, Upload } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
-import { IconType } from "antd/es/notification/interface";
 import {
   MixnetRequest,
   MixnetRequestType,
 } from "@/service/request/MixnetRequest";
-import { MixnetRequestSerilizer } from "@/service/utils/MixnetRequestSerilizer";
 import useRecipientAddresses from "@/hooks/useRecipientAddresses";
-
-const nymApiUrl = "https://validator.nymtech.net/api";
+import uuid4 from "uuid4";
+import { useAppDispatch } from "@/hooks/useAppStore";
+import {
+  setIsConnected,
+  setIsConnecting,
+  setReceivedMessage,
+  setRecipientAddress,
+  setSelfAddress,
+} from "@/store/slice/nymClientSlice";
+import {
+  useInitClientMutation,
+  useStopClientMutation,
+  useUploadFileMutation,
+} from "@/store/api/nymApi";
+import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
+import { MixnetRequestSerilizer } from "@/utils/MixnetRequestSerilizer";
+import {
+  notifyError,
+  notifySuccess,
+  notifyWarning,
+} from "@/utils/GlobalNotification";
+import { UploadChangeParam } from "antd/es/upload/interface";
 
 function App() {
-  const [nym, setNym] = useState<NymMixnetClient>();
-  const [isConnecting, setIsConnecting] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
+  const { isConnected, isConnecting, selfAddress, recipientAddress } =
+    useSelectNymClient();
+
+  const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
-  const [selfAddress, setSelfAddress] = useState<string>();
   const [messageText, setMessageText] = useState<string>("");
-  const [receivedMessage, setReceivedMessage] = useState<string>();
-  const [recipentAddress, setRecipentAdress] = useState<string | null>();
-  const { recipientAddresses, addRecipient } = useRecipientAddresses();
+  const { recipientAddresses } = useRecipientAddresses();
 
-  const init = useCallback(async () => {
-    setIsConnecting(true);
+  const [initClient] = useInitClientMutation();
+  const [stopClient] = useStopClientMutation();
+  const [uploadFile] = useUploadFileMutation();
 
+  const init = async () => {
+    dispatch(setIsConnecting(true));
     try {
-      const client = await createNymMixnetClient();
-      setNym(client);
-
-      await client?.client.start({
-        clientId: crypto.randomUUID(),
-        nymApiUrl,
-      });
-
-      client?.events.subscribeToConnected((e) => {
-        if (e.kind == EventKinds.Connected) {
-          setIsConnecting(false);
-          setIsConnected(true);
-          showNotification("Connected to Nym Mixnet", "success");
-        }
-
-        const { address } = e.args;
-        setSelfAddress(address);
-      });
-
-      client?.events.subscribeToLoaded((e) => {
-        console.log("Client ready: ", e.args);
-        showNotification("Client ready to loaded", "success");
-      });
-
-      client?.events.subscribeToTextMessageReceivedEvent((e) => {
-        console.log(e.args.payload);
-        setReceivedMessage(e.args.payload);
-        showNotification(`Message received ${JSON.stringify(e)}`, "info");
-      });
+      await initClient({
+        eventHandlers: {
+          onConnected: () => {
+            dispatch(setIsConnected(true));
+          },
+          onDisconnected: () => {
+            dispatch(setIsConnected(false));
+          },
+          onSelfAddress: (address: string) => {
+            dispatch(setSelfAddress(address));
+          },
+          onMessageReceived: (message: string) => {
+            dispatch(setReceivedMessage(message));
+          },
+        },
+      }).unwrap();
     } catch (error) {
-      showNotification(`Failed to start client ${error}`, "error");
       console.error("Failed to start client", error);
-    }
-  }, []);
-
-  const stop = useCallback(async () => {
-    try {
-      await nym?.client.stop();
-    } catch (error) {
-      showNotification(`Failed to stop client ${error}`, "error");
-      console.error("Failed to stop client", error);
     } finally {
-      setIsConnected(false);
+      dispatch(setIsConnecting(false));
     }
-  }, [nym]);
+  };
+
+  const stop = async () => {
+    try {
+      await stopClient().unwrap();
+      dispatch(setIsConnected(false));
+    } catch (error) {
+      console.error("Failed to stop client", error);
+    }
+  };
+
+  const handleFileChange = (info: UploadChangeParam) => {
+    const selectedFile = info.fileList[0].originFileObj || null;
+    setFile(selectedFile);
+  };
 
   const send = async () => {
-    if (!recipentAddress) {
-      showNotification("Please enter a recipient address", "error");
+    if (!recipientAddress) {
+      notifyError("Please enter a recipient address");
       return;
     }
+
+    if (!file) {
+      notifyError("Please select a file to upload");
+      return;
+    }
+
     setUploading(true);
 
-    const request = new MixnetRequest(
-      "123e4567-e89b-12d3-a456-426614174000",
-      MixnetRequestType.TYPE_A,
-      { message: messageText }
-    );
+    const reader = new FileReader();
 
-    try {
-      await nym?.client.rawSend({
-        payload: MixnetRequestSerilizer.serialize(request),
-        recipient: recipentAddress,
-      });
+    reader.onload = async () => {
+      const arrayBuffer = reader.result as ArrayBuffer;
+      const content = new Uint8Array(arrayBuffer);
 
-      showNotification("Message sent", "success");
-      addRecipient(recipentAddress);
-    } catch (error) {
-      showNotification(`Failed to send message ${error}`, "error");
-      console.error("Failed to send message", error);
-    } finally {
-      setUploading(false);
-    }
+      const request = new MixnetRequest(
+        uuid4(),
+        MixnetRequestType.UPLOAD_FILE,
+        {
+          userId: uuid4(),
+          title: "png_test",
+          message: messageText,
+          content: Array.from(content),
+        }
+      );
+
+      try {
+        notifyWarning("Sending message...!!!");
+        await uploadFile({
+          payload: MixnetRequestSerilizer.serialize(request),
+        }).unwrap();
+
+        notifySuccess("Message sent");
+      } catch (error) {
+        notifyError(`Failed to send message ${error}`);
+        console.error("Failed to send message", error);
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
   };
 
-  const showNotification = (message: string, type: IconType = "info") => {
-    notification.open({
-      message: type.toUpperCase(),
-      description: message,
-      type,
-      showProgress: true,
-      pauseOnHover: true,
-    });
-  };
+  const setRecipentAdress = (address: string) =>
+    dispatch(setRecipientAddress(address));
 
   const spaceY = 12;
   return (
@@ -141,11 +159,11 @@ function App() {
           </NymFlexContainer>
           <NymFlexContainer vertical>
             <Typography.Title level={4} type="danger">
-              Recipient {isConnected ? "✅" : "❌"}
+              Recipient {isConnected && recipientAddress ? "✅" : "❌"}
             </Typography.Title>
             {isConnected && (
               <Typography.Text type="warning">
-                {recipentAddress}
+                {recipientAddress}
               </Typography.Text>
             )}
           </NymFlexContainer>
@@ -161,10 +179,15 @@ function App() {
           />
           <TextArea
             placeholder="Recipent Address"
-            value={recipentAddress ?? ""}
-            onChange={(e) => setRecipentAdress(e.target.value)}
+            value={recipientAddress ?? ""}
+            onChange={(e) => dispatch(setRecipientAddress(e.target.value))}
           />
-          <NymButton type="primary" onClick={send} loading={uploading}>
+          <NymButton
+            type="primary"
+            onClick={send}
+            loading={uploading}
+            disabled={!isConnected}
+          >
             Send
           </NymButton>
           <NymButton type="primary" onClick={init} loading={isConnecting}>
@@ -178,6 +201,9 @@ function App() {
           >
             Stop
           </NymButton>
+          <Upload beforeUpload={() => false} onChange={handleFileChange}>
+            <NymButton icon={<UploadOutlined />}>Select File</NymButton>
+          </Upload>
         </NymFlexContainer>
         <NymFlexContainer vertical>
           {recipientAddresses.map((address) => (
