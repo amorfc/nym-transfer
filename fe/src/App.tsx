@@ -133,7 +133,7 @@ function App() {
 
       const uploadPromise = new Promise((resolve, reject) => {
         reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error);
+        reader.onerror = () => reject(new Error("Failed to read file"));
         reader.readAsArrayBuffer(file);
       });
 
