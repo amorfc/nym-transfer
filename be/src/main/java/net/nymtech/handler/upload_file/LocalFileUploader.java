@@ -13,7 +13,8 @@ final class LocalFileUploader implements FileUploader {
   @Override
   public void upload(String pathStr, byte[] content) throws IOException {
     var path = Path.of(pathStr);
-    Files.write(path, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    Files.createDirectories(path.getParent());
+    Files.write(path, content, StandardOpenOption.CREATE_NEW, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
   }
 
 }
