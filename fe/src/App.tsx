@@ -28,19 +28,15 @@ import {
 } from "@/store/api/nymApi";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import { MixnetRequestSerilizer } from "@/utils/MixnetRequestSerilizer";
-import {
-  notifyError,
-  notifySuccess,
-  notifyWarning,
-} from "@/utils/GlobalNotification";
-import { UploadChangeParam } from "antd/es/upload/interface";
+import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
+import { UploadChangeParam, UploadFile } from "antd/es/upload/interface";
+import { useFileUpload } from "@/hooks/useFileUpload";
 
 function App() {
   const dispatch = useAppDispatch();
   const { isConnected, isConnecting, selfAddress, recipientAddress } =
     useSelectNymClient();
 
-  const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
   const [messageText, setMessageText] = useState<string>("");
   const { recipientAddresses } = useRecipientAddresses();
@@ -48,6 +44,11 @@ function App() {
   const [initClient] = useInitClientMutation();
   const [stopClient] = useStopClientMutation();
   const [uploadFile] = useUploadFileMutation();
+
+  const { file, setFile, validateFile } = useFileUpload({
+    maxSize: 500, // 500MB
+    allowedTypes: ["image/png", "image/jpeg", "application/pdf"],
+  });
 
   const init = async () => {
     dispatch(setIsConnecting(true));
@@ -84,9 +85,35 @@ function App() {
     }
   };
 
-  const handleFileChange = (info: UploadChangeParam) => {
-    const selectedFile = info.fileList[0].originFileObj || null;
-    setFile(selectedFile);
+  const handleFileChange = (info: UploadChangeParam<UploadFile>) => {
+    try {
+      if (!info.fileList?.length) {
+        notifyError("No file selected");
+        return;
+      }
+
+      const uploadFile = info.fileList[0];
+      const selectedFile = uploadFile.originFileObj;
+
+      if (!selectedFile) {
+        notifyError("Invalid file object");
+        return;
+      }
+
+      // Validate file
+      validateFile(selectedFile);
+
+      setFile(selectedFile);
+      notifySuccess(`File "${selectedFile.name}" selected successfully`);
+    } catch (error) {
+      if (error instanceof Error) {
+        notifyError(error.message);
+      } else {
+        notifyError("Unknown error occurred while handling file");
+      }
+      console.error("File selection error:", error);
+      setFile(null);
+    }
   };
 
   const send = async () => {
@@ -100,41 +127,45 @@ function App() {
       return;
     }
 
-    setUploading(true);
+    try {
+      setUploading(true);
+      const reader = new FileReader();
 
-    const reader = new FileReader();
+      const uploadPromise = new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(file);
+      });
 
-    reader.onload = async () => {
-      const arrayBuffer = reader.result as ArrayBuffer;
-      const content = new Uint8Array(arrayBuffer);
+      const arrayBuffer = await uploadPromise;
+      const content = new Uint8Array(arrayBuffer as ArrayBuffer);
 
       const request = new MixnetRequest(
         uuid4(),
         MixnetRequestType.UPLOAD_FILE,
         {
           userId: uuid4(),
-          title: "png_test",
+          title: file.name,
           message: messageText,
           content: Array.from(content),
         }
       );
 
-      try {
-        notifyWarning("Sending message...!!!");
-        await uploadFile({
-          payload: MixnetRequestSerilizer.serialize(request),
-        }).unwrap();
+      await uploadFile({
+        payload: MixnetRequestSerilizer.serialize(request),
+      }).unwrap();
 
-        notifySuccess("Message sent");
-      } catch (error) {
-        notifyError(`Failed to send message ${error}`);
-        console.error("Failed to send message", error);
-      } finally {
-        setUploading(false);
+      notifySuccess("File uploaded successfully");
+    } catch (error) {
+      if (error instanceof Error) {
+        notifyError(error.message);
+      } else {
+        notifyError("Failed to upload file");
       }
-    };
-
-    reader.readAsArrayBuffer(file);
+      console.error("Upload error:", error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const setRecipentAdress = (address: string) =>
