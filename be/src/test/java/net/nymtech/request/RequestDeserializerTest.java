@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,12 +19,14 @@ final class RequestDeserializerTest {
     var type = Request.Type.UPLOAD_FILE;
     var testContentBytes = objectMapper.writeValueAsBytes(TestData.content);
     ByteBuffer serializedRequest = ByteBuffer.allocate(TestData.bytesBeforeDelimiter.length
-        + TestData.delimiter.length + 16 + 1 + testContentBytes.length);
+        + TestData.delimiter.length + 16 + 4 + 1 + TestData.clientAddress.length() + testContentBytes.length);
     serializedRequest.put(TestData.bytesBeforeDelimiter);
     serializedRequest.put(TestData.delimiter);
     serializedRequest.putLong(TestData.requestId.getMostSignificantBits());
     serializedRequest.putLong(TestData.requestId.getLeastSignificantBits());
     serializedRequest.put(type.value());
+    serializedRequest.putInt(TestData.clientAddress.length());
+    serializedRequest.put(TestData.clientAddress.getBytes(StandardCharsets.UTF_8));
     serializedRequest.put(testContentBytes);
 
     // when
@@ -31,7 +34,7 @@ final class RequestDeserializerTest {
 
     // then
     assertThat(actual).usingRecursiveComparison()
-        .isEqualTo(new Request(TestData.requestId, Request.Type.UPLOAD_FILE, testContentBytes));
+        .isEqualTo(new Request(TestData.requestId, Request.Type.UPLOAD_FILE, TestData.clientAddress, testContentBytes));
   }
 
   @Test
@@ -97,6 +100,7 @@ final class RequestDeserializerTest {
     private static String content =
         "{\"userId\":\"410d5c38-aaef-40bb-8003-33300097b5f2\",\"content\":[1,2,3,4,5]}";
     private static byte[] delimiter = new byte[] {13, 10, 13, 10};
+    private static String clientAddress = "CFmEv5jn1yxTdpbaRQHZe5Tyyb378Kg4FvR7auyH5zyL.5w8bcf4NRGryQfFrkrw12rStDnEqCBEruo63rxzhz953@Eb15FTXQgnenwLmqdfCQNj6PmKjMszrmHhtXqKKRafMW";
   }
 
 }

@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 /**
  * Represents the message format for the requests that are sent through NYM Mixnet.
  */
-public record Request(UUID id, Request.Type type, byte[] content) {
+public record Request(UUID id, Request.Type type, String clientAddress, byte[] content) {
 
   @Getter
   @Accessors(fluent = true, chain = true, makeFinal = true)
@@ -31,7 +31,7 @@ public record Request(UUID id, Request.Type type, byte[] content) {
 
   @Override
   public String toString() {
-    return "Request [id=%s, type=%s, content=%s]".formatted(id, type.name(),
+    return "Request [id=%s, type=%s, clientAddress=%s, content=%s]".formatted(id, type.name(), clientAddress,
         Arrays.toString(content));
   }
 

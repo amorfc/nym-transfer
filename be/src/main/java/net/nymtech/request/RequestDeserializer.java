@@ -48,8 +48,12 @@ public final class RequestDeserializer {
       throw new IllegalArgumentException("Request type couldn't be extracted!");
     }
 
-    return new Request(requestId, requestType,
-        Arrays.copyOfRange(message.array(), offset + 17, message.array().length));
+    int lengthOfClientAddress = message.getInt(offset + 17);
+    var clientAddressBytes = new byte[lengthOfClientAddress];
+    message.get(offset + 21, clientAddressBytes, 0, lengthOfClientAddress);
+
+    return new Request(requestId, requestType, new String(clientAddressBytes),
+        Arrays.copyOfRange(message.array(), offset + 21 + lengthOfClientAddress, message.array().length));
   }
 
   private static int findOffset(ByteBuffer message) {
