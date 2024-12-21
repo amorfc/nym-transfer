@@ -26,7 +26,7 @@ We have two static sized fields and two variable sized fields.
 - `id`: Represents the identifier of the request and it is used for debugging purposes. It's a version 4 UUID so it's **16 bytes**. In a nutshell, the first 16 bytes of the request should be this UUID.
 - `type`: Represents the type of the request sent. It's just **1 byte** and currently there is only one value available which is **1** that represents that the request is the file uploading request. It should be placed at the seventeenth position.
 
-### Variable sized fields
+### Variable sized fields
 
 - `clientAddress`: Represents the UTF-8 encoded Nym Mixnet address of the client. This value is used by Backend application to send the response to the client. The size of this value can be different for different clients so the first 4 bytes are reserved for the size information. In short, the bytes **18, 19, 20, 21** should be used to place an integer value and the following bytes, i.e., the bytes **22, 23, 24, ...** should be the client address. As an example, if the client address is *CFmEv5jn1yxTdpbaRQHZe5Tyyb378Kg4FvR7auyH5zyL.5w8bcf4NRGryQfFrkrw12rStDnEqCBEruo63rxzhz953@Eb15FTXQgnenwLmqdfCQNj6PmKjMszrmHhtXqKKRafMW*, 134 character long, you should put 134 into the next 4 bytes and the client address into the following 134 bytes. In total, 138 bytes should have been placed for the example client address.
 
