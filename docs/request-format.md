@@ -40,4 +40,4 @@ We have two static sized fields and two variable sized fields.
 }
 ```
 
-Backend application's `RequestDeserializer` can be examined for better understanding.
+Backend application's [`RequestDeserializer`](../be/src/main/java/net/nymtech/request/RequestDeserializer.java) can be examined for better understanding.
