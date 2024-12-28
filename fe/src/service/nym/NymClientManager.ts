@@ -37,6 +37,7 @@ class NymClientManager {
     await this.client.client.start({
       clientId: uuid4(),
       nymApiUrl: this.nymApiUrl,
+      forceTls: true,
     });
 
     this.subscribeToEvents();
