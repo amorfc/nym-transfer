@@ -47,9 +47,14 @@ class NymClientManager {
     if (!this.client) return;
 
     this.client.events.subscribeToConnected((e) => {
-      if (e.kind === EventKinds.Connected) {
+      const {
+        kind,
+        args: { address },
+      } = e;
+
+      if (address && EventKinds.Connected === kind) {
         this.eventHandlers.onConnected?.();
-        this.getSelfAddress();
+        this.eventHandlers.onSelfAddress?.(address);
       }
     });
 
@@ -62,17 +67,6 @@ class NymClientManager {
     this.client.events.subscribeToTextMessageReceivedEvent((e) => {
       this.eventHandlers.onMessageReceived?.(e.args.payload);
     });
-  }
-
-  private async getSelfAddress() {
-    if (this.client) {
-      const address = await this.client.client.selfAddress();
-      if (address) {
-        this.eventHandlers.onSelfAddress?.(address);
-      } else {
-        throw new Error("Failed to get self address");
-      }
-    }
   }
 
   public async stop() {
