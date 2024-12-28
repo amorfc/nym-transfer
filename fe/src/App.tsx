@@ -131,11 +131,13 @@ function App() {
       setUploading(true);
       const reader = new FileReader();
 
-      const uploadPromise = new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error("Failed to read file"));
-        reader.readAsArrayBuffer(file);
-      });
+      const uploadPromise = new Promise<string | ArrayBuffer | null>(
+        (resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.readAsArrayBuffer(file);
+        }
+      );
 
       const arrayBuffer = await uploadPromise;
       const content = new Uint8Array(arrayBuffer as ArrayBuffer);
