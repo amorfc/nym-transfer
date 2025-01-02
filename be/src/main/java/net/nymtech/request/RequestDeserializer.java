@@ -1,7 +1,6 @@
 package net.nymtech.request;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +13,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RequestDeserializer {
 
-  private static final int SIZE_REQUEST_ID = 16;
-  private static final int SIZE_REQUEST_TYPE = 1;
-  private static final int ASCII_DECIMAL_CARRIAGE_RETURN = 13;
-  private static final int ASCII_DECIMAL_NEW_LINE = 10;
-
   /**
    * Converts the given {@code message} bytes to {@code Request} object.
    * 
@@ -27,61 +21,59 @@ public final class RequestDeserializer {
    * @throws IllegalArgumentException if given {@code message} has invalid format
    */
   public final static Request deserialize(ByteBuffer message) {
-    int offset = findOffset(message);
-    if (offset == -1) {
-      throw new IllegalArgumentException("Offset couldn't be extracted!");
+    byte[] id = new byte[16];
+    byte type = 0;
+    byte[] clientAddress = null;
+    byte[] content = null;
+
+    // Response tag(1 byte) + hasSenderTag flag(1 byte) + Length of data sent(8
+    // byte)
+    message.position(10);
+    if (message.remaining() < 25) {
+      throw new IllegalArgumentException("Request can't be smaller than 25 bytes!");
     }
-    if (message.limit() < offset + SIZE_REQUEST_ID + SIZE_REQUEST_TYPE) {
-      throw new IllegalArgumentException("Message has invalid format!");
-    }
-
-    var requestIdBytes = new byte[16];
-    message.get(offset, requestIdBytes, 0, 16);
-    var requestIdByteBuffer = ByteBuffer.wrap(requestIdBytes);
-    long high = requestIdByteBuffer.getLong();
-    long low = requestIdByteBuffer.getLong();
-    UUID requestId = new UUID(high, low);
-
-    byte requestTypeByte = message.array()[offset + 16];
-    var requestType = Request.Type.valueOf(requestTypeByte);
-    if (requestType == null) {
-      throw new IllegalArgumentException("Request type couldn't be extracted!");
-    }
-
-    int lengthOfClientAddress = message.getInt(offset + 17);
-    var clientAddressBytes = new byte[lengthOfClientAddress];
-    message.get(offset + 21, clientAddressBytes, 0, lengthOfClientAddress);
-
-    return new Request(requestId, requestType, new String(clientAddressBytes),
-        Arrays.copyOfRange(message.array(), offset + 21 + lengthOfClientAddress, message.array().length));
-  }
-
-  private static int findOffset(ByteBuffer message) {
-    int offset = -1;
-
-    byte[] arr = message.array();
-    for (int i = 0; i < arr.length - 4; i++) {
-      if (i + 4 >= arr.length) {
-        return -1;
+    while (message.hasRemaining()) {
+      if (message.position() >= 10 && message.position() < 26) {
+        id[message.position() - 10] = message.get();
+      } else if (message.position() == 26) {
+        type = message.get();
+        if (!Request.Type.hasValue(type)) {
+          throw new IllegalArgumentException("No type value exists for given byte: %s!".formatted(type));
+        }
+      } else if (message.position() == 27) {
+        int clientAddressLength = message.getInt(27);
+        clientAddress = new byte[clientAddressLength];
+        message.position(31);
+      } else if (message.position() >= 31 && message.position() < 31 + clientAddress.length) {
+        clientAddress[message.position() - 31] = message.get();
+      } else if (message.position() == 31 + clientAddress.length) {
+        int contentLength = message.getInt(31 + clientAddress.length);
+        message.position(35 + clientAddress.length);
+        if (message.remaining() != contentLength) {
+          throw new IllegalArgumentException("Content length is not as expected, expected: %s, actual: %s"
+              .formatted(contentLength, message.remaining()));
+        }
+        content = new byte[contentLength];
       } else {
-        if (arr[i] != ASCII_DECIMAL_CARRIAGE_RETURN) {
-          continue;
-        }
-        if (arr[i + 1] != ASCII_DECIMAL_NEW_LINE) {
-          continue;
-        }
-        if (arr[i + 2] != ASCII_DECIMAL_CARRIAGE_RETURN) {
-          continue;
-        }
-        if (arr[i + 3] != ASCII_DECIMAL_NEW_LINE) {
-          continue;
-        }
-
-        return i + 4;
+        content[message.position() - (35 + clientAddress.length)] = message.get();
       }
     }
 
-    return offset;
+    return new Request(toUuid(id), Request.Type.valueOf(type), clientAddress, content);
+  }
+
+  private static UUID toUuid(byte[] from) {
+    long mostSignificantBits = 0;
+    long leastSignificantBits = 0;
+
+    for (int i = 0; i < 8; i++) {
+      mostSignificantBits = (mostSignificantBits << 8) | (from[i] & 0xFF);
+    }
+    for (int i = 8; i < 16; i++) {
+      leastSignificantBits = (leastSignificantBits << 8) | (from[i] & 0xFF);
+    }
+
+    return new UUID(mostSignificantBits, leastSignificantBits);
   }
 
 }

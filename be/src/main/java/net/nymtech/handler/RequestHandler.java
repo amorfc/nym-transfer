@@ -1,6 +1,8 @@
 package net.nymtech.handler;
 
-import net.nymtech.request.Request;
+import java.util.UUID;
+
+import net.nymtech.response.Response;
 
 /**
  * Represents the API that can be called through NYM Mixnet.
@@ -10,8 +12,9 @@ public interface RequestHandler {
   /**
    * Handles the incoming request.
    * 
-   * @param request incoming request
+   * @param requestContent incoming request
+   * @return response to the request
    */
-  void handle(Request request);
+  Response handle(UUID requestId, byte[] requestContent);
 
 }

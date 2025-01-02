@@ -11,8 +11,8 @@ final class RequestTest {
     // given
     var id = UUID.fromString("f239dd2f-e6d7-43e8-ad6e-ba19270d6182");
     var type = Request.Type.UPLOAD_FILE;
-    var clientAddress = "1234";
-    var content = new byte[] {104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33};
+    var clientAddress = new byte[] { 1, 2, 3, 4 };
+    var content = new byte[] { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33 };
     var underTest = new Request(id, type, clientAddress, content);
 
     // when
@@ -20,7 +20,7 @@ final class RequestTest {
 
     // then
     assertThat(actual).isEqualTo(
-        "Request [id=f239dd2f-e6d7-43e8-ad6e-ba19270d6182, type=UPLOAD_FILE, clientAddress=1234, content=[104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33]]");
+        "Request [id=f239dd2f-e6d7-43e8-ad6e-ba19270d6182, type=UPLOAD_FILE]");
   }
 
 }

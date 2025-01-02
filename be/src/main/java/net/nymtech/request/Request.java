@@ -1,6 +1,5 @@
 package net.nymtech.request;
 
-import java.util.Arrays;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -8,7 +7,7 @@ import lombok.experimental.Accessors;
 /**
  * Represents the message format for the requests that are sent through NYM Mixnet.
  */
-public record Request(UUID id, Request.Type type, String clientAddress, byte[] content) {
+public record Request(UUID id, Request.Type type, byte[] clientAddress, byte[] content) {
 
   @Getter
   @Accessors(fluent = true, chain = true, makeFinal = true)
@@ -21,6 +20,13 @@ public record Request(UUID id, Request.Type type, String clientAddress, byte[] c
       this.value = value;
     }
 
+    public static boolean hasValue(byte value) {
+      return switch (value) {
+        case 1 -> true;
+        default -> false;
+      };
+    }
+
     public static Type valueOf(byte value) {
       return switch (value) {
         case 1 -> Type.UPLOAD_FILE;
@@ -31,8 +37,7 @@ public record Request(UUID id, Request.Type type, String clientAddress, byte[] c
 
   @Override
   public String toString() {
-    return "Request [id=%s, type=%s, clientAddress=%s, content=%s]".formatted(id, type.name(), clientAddress,
-        Arrays.toString(content));
+    return "Request [id=%s, type=%s]".formatted(id, type.name());
   }
 
 }

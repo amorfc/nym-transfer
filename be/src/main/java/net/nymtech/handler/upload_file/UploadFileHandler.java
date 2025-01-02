@@ -1,13 +1,14 @@
 package net.nymtech.handler.upload_file;
 
 import java.io.IOException;
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.websocket.Session;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.nymtech.handler.RequestHandler;
-import net.nymtech.request.Request;
+import net.nymtech.response.Response;
 
 /**
  * {@code RequestHandler} that handles {@code Request.Type.UPLOAD_FILE} typed requests.
@@ -22,32 +23,32 @@ public final class UploadFileHandler implements RequestHandler {
   private final ObjectMapper objectMapper;
   @NonNull
   private final String basePath;
-  @NonNull
-  private final Session session;
 
   @Override
-  public void handle(Request request) {
+  public Response handle(UUID requestId, byte[] requestContent) {
     try {
-      log.info("{} is being processed...", request.id());
-      var content = extractContent(request);
-      var path = extractFilePath(content);
-      uploader.upload(path, content.content());
+      log.debug("{} is being processed...", requestId);
 
-      log.info("{} handled successfully!", request.id());
+      var content = extractContent(requestId, requestContent);
+      var path = extractFilePath(content);
+      uploader.upload(basePath + path, content.content());
+      log.debug("{} file uploaded!", requestId);
+
+      return new Response(Response.Status.SUCCESSFUL, objectMapper.writeValueAsBytes(new UploadFileResponse(path)));
     } catch (IOException e) {
-      log.error("{} couldn't be handled successfully!", request.id(), e);
-      // TODO: Send error response!
+      log.error("{} couldn't be handled successfully!", requestId, e);
+      return new Response(Response.Status.UNSUCCESSFUL, "Something went unexpectedly wrong!".getBytes());
     }
   }
 
-  private UploadFileRequest extractContent(Request request) throws IOException {
-    var content = objectMapper.readValue(request.content(), UploadFileRequest.class);
-    log.debug("UploadFileRequest deserialized successfully: {}", content);
+  private UploadFileRequest extractContent(UUID requestId, byte[] requestContent) throws IOException {
+    var content = objectMapper.readValue(requestContent, UploadFileRequest.class);
+    log.debug("{} content deserialized successfully: {}", requestId, content);
     return content;
   }
 
   private String extractFilePath(UploadFileRequest content) {
-    return "%s/%s/%s".formatted(basePath, content.userId(),
+    return "/%s/%s".formatted(content.userId(),
         content.title().strip().toLowerCase().replace(" ", "_"));
   }
 
