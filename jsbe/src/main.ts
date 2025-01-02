@@ -52,15 +52,16 @@ function connectWebsocket(url: string): Promise<WebSocket> {
 }
 
 const main = async () => {
-  var port = "1977"; // client websocket listens on 1977 by default, change if yours is different
-  var localClientUrl = "ws://127.0.0.1:" + port;
+  const port = "1977"; // client websocket listens on 1977 by default
+  const localClientUrl = "ws://127.0.0.1:" + port;
 
   console.log("Listening on: " + localClientUrl);
   try {
     let websocket: WebSocket = await connectWebsocket(localClientUrl);
     websocket.onmessage = (event: WebSocket.MessageEvent) => {
       try {
-        let response = JSON.parse(event.data.toString());
+        const data = event.data as Buffer | string;
+        let response = JSON.parse(data.toString());
 
         if (response.type == "received") {
           const text = response.message;

@@ -22,6 +22,8 @@ export const nymApi = createApi({
           notifySuccess("Nym client connected");
           return { data: undefined };
         } catch (error) {
+          console.log({ error });
+
           return { error };
         }
       },

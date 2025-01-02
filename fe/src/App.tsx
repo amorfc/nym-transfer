@@ -1,153 +1,106 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import NymScreenWrapper from "@/components/screen/NymScreenWrapper";
-import NymButton from "@/components/common/NymButton";
 import NymFlexContainer from "@/components/common/NymFlexContainer";
-import { Typography, Upload } from "antd";
+import {
+  Typography,
+  Upload,
+  Input,
+  List,
+  Card,
+  Layout,
+  ConfigProvider,
+} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
 import {
   MixnetRequest,
   MixnetRequestType,
 } from "@/service/request/MixnetRequest";
-import useRecipientAddresses from "@/hooks/useRecipientAddresses";
 import uuid4 from "uuid4";
 import { useAppDispatch } from "@/hooks/useAppStore";
 import {
   setIsConnected,
-  setIsConnecting,
-  setReceivedMessage,
-  setRecipientAddress,
   setSelfAddress,
+  setRecipientAddress,
 } from "@/store/slice/nymClientSlice";
 import {
   useInitClientMutation,
-  useStopClientMutation,
   useUploadFileMutation,
 } from "@/store/api/nymApi";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import { MixnetRequestSerilizer } from "@/utils/MixnetRequestSerilizer";
 import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
-import { UploadChangeParam, UploadFile } from "antd/es/upload/interface";
+import { UploadFile } from "antd/es/upload/interface";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import NymButton from "@/components/common/NymButton";
+import NymLayout from "@/components/common/NymLayout";
+import NymConnectionStatus from "@/components/common/NymConnectionStatus";
+
+const { Content } = Layout;
+const { Text } = Typography;
 
 function App() {
   const dispatch = useAppDispatch();
-  const { isConnected, isConnecting, selfAddress, recipientAddress } =
-    useSelectNymClient();
-
-  const [uploading, setUploading] = useState<boolean>(false);
-  const [messageText, setMessageText] = useState<string>("");
-  const { recipientAddresses } = useRecipientAddresses();
+  const { isConnected, selfAddress, recipientAddress } = useSelectNymClient();
+  const [title, setTitle] = useState("");
+  const [messageText, setMessageText] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const [initClient] = useInitClientMutation();
-  const [stopClient] = useStopClientMutation();
   const [uploadFile] = useUploadFileMutation();
 
-  const { file, setFile, validateFile } = useFileUpload({
-    maxSize: 500, // 500MB
+  const { validateFile } = useFileUpload({
+    maxSize: 500,
     allowedTypes: ["image/png", "image/jpeg", "application/pdf"],
   });
 
-  const init = async () => {
-    dispatch(setIsConnecting(true));
-    try {
-      await initClient({
-        eventHandlers: {
-          onConnected: () => {
-            dispatch(setIsConnected(true));
+  // Auto-reconnection logic
+  useEffect(() => {
+    const connectClient = async () => {
+      try {
+        await initClient({
+          eventHandlers: {
+            onConnected: () => dispatch(setIsConnected(true)),
+            onSelfAddress: (address: string) =>
+              dispatch(setSelfAddress(address)),
           },
-          onDisconnected: () => {
-            dispatch(setIsConnected(false));
-          },
-          onSelfAddress: (address: string) => {
-            dispatch(setSelfAddress(address));
-          },
-          onMessageReceived: (message: string) => {
-            dispatch(setReceivedMessage(message));
-          },
-        },
-      }).unwrap();
-    } catch (error) {
-      console.error("Failed to start client", error);
-    } finally {
-      dispatch(setIsConnecting(false));
-    }
-  };
-
-  const stop = async () => {
-    try {
-      await stopClient().unwrap();
-      dispatch(setIsConnected(false));
-    } catch (error) {
-      console.error("Failed to stop client", error);
-    }
-  };
-
-  const handleFileChange = (info: UploadChangeParam<UploadFile>) => {
-    try {
-      if (!info.fileList?.length) {
-        notifyError("No file selected");
-        return;
+        }).unwrap();
+      } catch (error) {
+        console.error("Connection failed:", error);
       }
+    };
 
-      const uploadFile = info.fileList[0];
-      const selectedFile = uploadFile.originFileObj;
-
-      if (!selectedFile) {
-        notifyError("Invalid file object");
-        return;
-      }
-
-      // Validate file
-      validateFile(selectedFile);
-
-      setFile(selectedFile);
-      notifySuccess(`File "${selectedFile.name}" selected successfully`);
-    } catch (error) {
-      if (error instanceof Error) {
-        notifyError(error.message);
-      } else {
-        notifyError("Unknown error occurred while handling file");
-      }
-      console.error("File selection error:", error);
-      setFile(null);
+    if (!isConnected) {
+      connectClient();
+      const interval = setInterval(connectClient, 10000);
+      return () => clearInterval(interval);
     }
-  };
+  }, [isConnected, initClient, dispatch]);
 
-  const send = async () => {
+  const handleUpload = async (file: UploadFile) => {
     if (!recipientAddress) {
       notifyError("Please enter a recipient address");
       return;
     }
 
-    if (!file) {
-      notifyError("Please select a file to upload");
+    if (!title.trim()) {
+      notifyError("Please enter a title");
       return;
     }
 
     try {
       setUploading(true);
-      const reader = new FileReader();
+      const arrayBuffer = await file.originFileObj?.arrayBuffer();
+      if (!arrayBuffer) throw new Error("Failed to read file");
 
-      const uploadPromise = new Promise<string | ArrayBuffer | null>(
-        (resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(new Error("Failed to read file"));
-          reader.readAsArrayBuffer(file);
-        }
-      );
-
-      const arrayBuffer = await uploadPromise;
-      const content = new Uint8Array(arrayBuffer as ArrayBuffer);
-
+      const content = new Uint8Array(arrayBuffer);
       const request = new MixnetRequest(
         uuid4(),
         MixnetRequestType.UPLOAD_FILE,
         {
           userId: uuid4(),
-          title: file.name,
+          title: title,
           message: messageText,
           content: Array.from(content),
         }
@@ -157,100 +110,189 @@ function App() {
         payload: MixnetRequestSerilizer.serialize(request),
       }).unwrap();
 
+      setUploadedFiles((prev) => [...prev, file]);
       notifySuccess("File uploaded successfully");
+      setTitle("");
+      setMessageText("");
     } catch (error) {
-      if (error instanceof Error) {
-        notifyError(error.message);
-      } else {
-        notifyError("Failed to upload file");
-      }
-      console.error("Upload error:", error);
+      notifyError(error instanceof Error ? error.message : "Upload failed");
     } finally {
       setUploading(false);
     }
   };
 
-  const setRecipentAdress = (address: string) =>
-    dispatch(setRecipientAddress(address));
-
-  const spaceY = 12;
   return (
-    <NymScreenWrapper vertical flex={1} justify="center" align="center">
-      <NymFlexContainer
-        vertical
-        flex={1}
-        justify="center"
-        align="center"
-        gap={spaceY}
+    <ConfigProvider
+      theme={{
+        components: {
+          Input: {
+            colorBgContainer: "rgba(255, 255, 255, 0.05)",
+            colorBorder: "rgba(255, 255, 255, 0.1)",
+            colorText: "#fff",
+            colorTextPlaceholder: "rgba(255, 255, 255, 0.65)",
+            activeBorderColor: "#FF5B37",
+            hoverBorderColor: "rgba(255, 255, 255, 0.2)",
+          },
+          Card: {
+            colorBgContainer: "rgba(255, 255, 255, 0.05)",
+            colorBorderSecondary: "rgba(255, 255, 255, 0.1)",
+          },
+          Button: {
+            primaryColor: "#fff",
+            colorPrimary: "#FF5B37",
+          },
+        },
+      }}
+    >
+      <NymLayout
+        style={{
+          minHeight: "100vh",
+          background: "#1E1E1E",
+          backgroundImage:
+            "radial-gradient(circle at 50% 50%, rgba(255, 91, 55, 0.15) 0%, rgba(30, 30, 30, 0) 70%)",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
-        <NymFlexContainer vertical gap={spaceY}>
-          <NymFlexContainer vertical>
-            <Typography.Title level={4} type="danger">
-              Self Address
-            </Typography.Title>
-            <Typography.Text type="warning">{selfAddress}</Typography.Text>
-          </NymFlexContainer>
-          <NymFlexContainer vertical>
-            <Typography.Title level={4} type="danger">
-              Recipient {isConnected && recipientAddress ? "✅" : "❌"}
-            </Typography.Title>
-            {isConnected && (
-              <Typography.Text type="warning">
-                {recipientAddress}
-              </Typography.Text>
-            )}
-          </NymFlexContainer>
-        </NymFlexContainer>
-        <NymFlexContainer
-          vertical
-          gap={spaceY}
-          style={{ backgroundColor: "transparent" }}
+        <Content
+          style={{
+            padding: "48px",
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+          }}
         >
-          <TextArea
-            placeholder="Message"
-            onChange={(e) => setMessageText(e.target.value)}
-          />
-          <TextArea
-            placeholder="Recipent Address"
-            value={recipientAddress ?? ""}
-            onChange={(e) => dispatch(setRecipientAddress(e.target.value))}
-          />
-          <NymButton
-            type="primary"
-            onClick={send}
-            loading={uploading}
-            disabled={!isConnected}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              maxWidth: 1400,
+              width: "100%",
+              margin: "0 auto",
+              gap: "48px",
+            }}
           >
-            Send
-          </NymButton>
-          <NymButton type="primary" onClick={init} loading={isConnecting}>
-            Try to Connect
-          </NymButton>
-          <NymButton
-            type="primary"
-            onClick={stop}
-            disabled={!isConnected}
-            loading={isConnecting}
-          >
-            Stop
-          </NymButton>
-          <Upload beforeUpload={() => false} onChange={handleFileChange}>
-            <NymButton icon={<UploadOutlined />}>Select File</NymButton>
-          </Upload>
-        </NymFlexContainer>
-        <NymFlexContainer vertical>
-          {recipientAddresses.map((address) => (
-            <NymButton
-              key={address}
-              type="text"
-              onClick={() => setRecipentAdress(address)}
-            >
-              {address}
-            </NymButton>
-          ))}
-        </NymFlexContainer>
-      </NymFlexContainer>
-    </NymScreenWrapper>
+            <div style={{ flex: 1 }}></div>
+
+            <div style={{ width: "400px" }}>
+              <Card
+                style={{
+                  background: "rgba(255, 255, 255, 0.05)",
+                  borderRadius: "16px",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+              >
+                <NymFlexContainer vertical gap={12}>
+                  <NymFlexContainer vertical gap={8}>
+                    <Upload
+                      accept=".png,.jpg,.jpeg,.pdf"
+                      beforeUpload={(file) => {
+                        try {
+                          validateFile(file);
+                          handleUpload(file as UploadFile);
+                        } catch (error) {
+                          notifyError(
+                            error instanceof Error
+                              ? error.message
+                              : "Invalid file"
+                          );
+                        }
+                        return false;
+                      }}
+                      disabled={!isConnected || uploading}
+                      style={{ width: "100%" }}
+                    >
+                      <NymButton
+                        type="text"
+                        icon={<UploadOutlined />}
+                        fullWidth
+                        disabled={!isConnected || uploading}
+                      >
+                        Add files
+                      </NymButton>
+                    </Upload>
+                    <Text
+                      style={{
+                        color: "rgba(255, 255, 255, 0.45)",
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Up to 2 GB free
+                    </Text>
+                  </NymFlexContainer>
+
+                  <Input
+                    placeholder="Title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+
+                  <TextArea
+                    placeholder="Message"
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    rows={4}
+                  />
+
+                  {process.env.NODE_ENV === "development" && (
+                    <div
+                      style={{
+                        padding: "16px",
+                        background: "rgba(0, 0, 0, 0.2)",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "rgba(255, 255, 255, 0.45)",
+                          display: "block",
+                          marginBottom: 8,
+                        }}
+                      >
+                        Self Address: {selfAddress ?? "Connecting..."}
+                      </Text>
+                      <Input
+                        placeholder="Recipient Address"
+                        value={recipientAddress ?? ""}
+                        onChange={(e) =>
+                          dispatch(setRecipientAddress(e.target.value))
+                        }
+                        style={{ marginTop: 8 }}
+                      />
+                    </div>
+                  )}
+
+                  {uploadedFiles.length > 0 && (
+                    <List
+                      dataSource={uploadedFiles}
+                      renderItem={(file) => (
+                        <List.Item>
+                          <div
+                            style={{
+                              padding: "8px 12px",
+                              background: "rgba(0, 0, 0, 0.2)",
+                              borderRadius: "8px",
+                              width: "100%",
+                            }}
+                          >
+                            <Text style={{ color: "#fff" }} ellipsis>
+                              {file.name}
+                            </Text>
+                          </div>
+                        </List.Item>
+                      )}
+                    />
+                  )}
+                </NymFlexContainer>
+              </Card>
+            </div>
+          </div>
+        </Content>
+
+        <NymConnectionStatus isConnected={isConnected} />
+      </NymLayout>
+    </ConfigProvider>
   );
 }
 
