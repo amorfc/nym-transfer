@@ -1,7 +1,6 @@
-import { Typography } from "antd";
 import React from "react";
-
-const { Text } = Typography;
+import { useThemeColors } from "@/hooks/useThemeColors.ts";
+import NymText from "./NymText";
 
 interface NymConnectionStatusProps {
   isConnected: boolean;
@@ -10,6 +9,8 @@ interface NymConnectionStatusProps {
 const NymConnectionStatus: React.FC<NymConnectionStatusProps> = ({
   isConnected,
 }) => {
+  const colors = useThemeColors();
+
   return (
     <div
       style={{
@@ -19,8 +20,8 @@ const NymConnectionStatus: React.FC<NymConnectionStatusProps> = ({
         display: "flex",
         alignItems: "center",
         padding: "8px 16px",
-        background: "rgba(37, 39, 43, 0.95)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
+        background: colors.bgSecondary,
+        border: `1px solid ${colors.borderPrimary}`,
         borderRadius: 8,
         backdropFilter: "blur(10px)",
         zIndex: 1000,
@@ -31,13 +32,11 @@ const NymConnectionStatus: React.FC<NymConnectionStatusProps> = ({
           width: 8,
           height: 8,
           borderRadius: "50%",
-          backgroundColor: isConnected ? "#4CAF50" : "#FF5B37",
+          backgroundColor: isConnected ? colors.success : colors.error,
           marginRight: 8,
         }}
       />
-      <Text style={{ color: "#fff", fontSize: "14px" }}>
-        {isConnected ? "Mixnet Connected" : "Connecting..."}
-      </Text>
+      <NymText>{isConnected ? "Mixnet Connected" : "Connecting..."}</NymText>
     </div>
   );
 };

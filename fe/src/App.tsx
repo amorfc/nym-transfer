@@ -1,16 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import NymFlexContainer from "@/components/common/NymFlexContainer";
-import {
-  Typography,
-  Upload,
-  Input,
-  List,
-  Card,
-  Layout,
-  ConfigProvider,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Input, List, Layout, ConfigProvider } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import {
   MixnetRequest,
@@ -20,8 +11,8 @@ import uuid4 from "uuid4";
 import { useAppDispatch } from "@/hooks/useAppStore";
 import {
   setIsConnected,
-  setSelfAddress,
   setRecipientAddress,
+  setSelfAddress,
 } from "@/store/slice/nymClientSlice";
 import {
   useInitClientMutation,
@@ -31,13 +22,17 @@ import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import { MixnetRequestSerilizer } from "@/utils/MixnetRequestSerilizer";
 import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
 import { UploadFile } from "antd/es/upload/interface";
-import { useFileUpload } from "@/hooks/useFileUpload";
-import NymButton from "@/components/common/NymButton";
 import NymLayout from "@/components/common/NymLayout";
 import NymConnectionStatus from "@/components/common/NymConnectionStatus";
+import { useTheme } from "@/theme/themeConfig";
+import ThemeSwitch from "@/components/common/ThemeSwitch";
+import NymCard from "@/components/common/NymCard.tsx";
+import NymText from "@/components/common/NymText";
+import NymFileUpload from "@/components/common/NymFileUpload";
 
 const { Content } = Layout;
-const { Text } = Typography;
+
+const alwaysTryToConnectDEV = false;
 
 function App() {
   const dispatch = useAppDispatch();
@@ -50,12 +45,8 @@ function App() {
   const [initClient] = useInitClientMutation();
   const [uploadFile] = useUploadFileMutation();
 
-  const { validateFile } = useFileUpload({
-    maxSize: 500,
-    allowedTypes: ["image/png", "image/jpeg", "application/pdf"],
-  });
+  const theme = useTheme();
 
-  // Auto-reconnection logic
   useEffect(() => {
     const connectClient = async () => {
       try {
@@ -71,7 +62,7 @@ function App() {
       }
     };
 
-    if (!isConnected) {
+    if (!isConnected && alwaysTryToConnectDEV) {
       connectClient();
       const interval = setInterval(connectClient, 10000);
       return () => clearInterval(interval);
@@ -121,39 +112,17 @@ function App() {
     }
   };
 
+  const handleFileSelect = (file: UploadFile) => {
+    try {
+      handleUpload(file);
+    } catch (error) {
+      notifyError(error instanceof Error ? error.message : "Invalid file");
+    }
+  };
+
   return (
-    <ConfigProvider
-      theme={{
-        components: {
-          Input: {
-            colorBgContainer: "rgba(255, 255, 255, 0.05)",
-            colorBorder: "rgba(255, 255, 255, 0.1)",
-            colorText: "#fff",
-            colorTextPlaceholder: "rgba(255, 255, 255, 0.65)",
-            activeBorderColor: "#FF5B37",
-            hoverBorderColor: "rgba(255, 255, 255, 0.2)",
-          },
-          Card: {
-            colorBgContainer: "rgba(255, 255, 255, 0.05)",
-            colorBorderSecondary: "rgba(255, 255, 255, 0.1)",
-          },
-          Button: {
-            primaryColor: "#fff",
-            colorPrimary: "#FF5B37",
-          },
-        },
-      }}
-    >
-      <NymLayout
-        style={{
-          minHeight: "100vh",
-          background: "#1E1E1E",
-          backgroundImage:
-            "radial-gradient(circle at 50% 50%, rgba(255, 91, 55, 0.15) 0%, rgba(30, 30, 30, 0) 70%)",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+    <ConfigProvider wave={{ disabled: false }} theme={theme}>
+      <NymLayout>
         <Content
           style={{
             padding: "48px",
@@ -169,125 +138,79 @@ function App() {
               maxWidth: 1400,
               width: "100%",
               margin: "0 auto",
-              gap: "48px",
             }}
           >
             <div style={{ flex: 1 }}></div>
 
-            <div style={{ width: "400px" }}>
-              <Card
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  borderRadius: "16px",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                }}
-              >
-                <NymFlexContainer vertical gap={12}>
-                  <NymFlexContainer vertical gap={8}>
-                    <Upload
-                      accept=".png,.jpg,.jpeg,.pdf"
-                      beforeUpload={(file) => {
-                        try {
-                          validateFile(file);
-                          handleUpload(file as UploadFile);
-                        } catch (error) {
-                          notifyError(
-                            error instanceof Error
-                              ? error.message
-                              : "Invalid file"
-                          );
-                        }
-                        return false;
-                      }}
-                      disabled={!isConnected || uploading}
-                      style={{ width: "100%" }}
+            <NymCard>
+              <NymFlexContainer vertical gap={12}>
+                <NymFileUpload
+                  onFileSelect={handleFileSelect}
+                  disabled={!isConnected}
+                  uploading={uploading}
+                />
+
+                <Input
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+
+                <TextArea
+                  placeholder="Message"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  rows={4}
+                />
+
+                {process.env.NODE_ENV === "development" && (
+                  <div
+                    style={{
+                      padding: "16px",
+                      background: "rgba(0, 0, 0, 0.2)",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <NymText
+                      tertiary
+                      style={{ display: "block", marginBottom: 8 }}
                     >
-                      <NymButton
-                        type="text"
-                        icon={<UploadOutlined />}
-                        fullWidth
-                        disabled={!isConnected || uploading}
-                      >
-                        Add files
-                      </NymButton>
-                    </Upload>
-                    <Text
-                      style={{
-                        color: "rgba(255, 255, 255, 0.45)",
-                        fontSize: "12px",
-                        textAlign: "center",
-                      }}
-                    >
-                      Up to 2 GB free
-                    </Text>
-                  </NymFlexContainer>
-
-                  <Input
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-
-                  <TextArea
-                    placeholder="Message"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    rows={4}
-                  />
-
-                  {process.env.NODE_ENV === "development" && (
-                    <div
-                      style={{
-                        padding: "16px",
-                        background: "rgba(0, 0, 0, 0.2)",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "rgba(255, 255, 255, 0.45)",
-                          display: "block",
-                          marginBottom: 8,
-                        }}
-                      >
-                        Self Address: {selfAddress ?? "Connecting..."}
-                      </Text>
-                      <Input
-                        placeholder="Recipient Address"
-                        value={recipientAddress ?? ""}
-                        onChange={(e) =>
-                          dispatch(setRecipientAddress(e.target.value))
-                        }
-                        style={{ marginTop: 8 }}
-                      />
-                    </div>
-                  )}
-
-                  {uploadedFiles.length > 0 && (
-                    <List
-                      dataSource={uploadedFiles}
-                      renderItem={(file) => (
-                        <List.Item>
-                          <div
-                            style={{
-                              padding: "8px 12px",
-                              background: "rgba(0, 0, 0, 0.2)",
-                              borderRadius: "8px",
-                              width: "100%",
-                            }}
-                          >
-                            <Text style={{ color: "#fff" }} ellipsis>
-                              {file.name}
-                            </Text>
-                          </div>
-                        </List.Item>
-                      )}
+                      Self Address: {selfAddress ?? "Connecting..."}
+                    </NymText>
+                    <Input
+                      placeholder="Recipient Address"
+                      value={recipientAddress ?? ""}
+                      onChange={(e) =>
+                        dispatch(setRecipientAddress(e.target.value))
+                      }
+                      style={{ marginTop: 8 }}
                     />
-                  )}
-                </NymFlexContainer>
-              </Card>
-            </div>
+                  </div>
+                )}
+
+                {uploadedFiles.length > 0 && (
+                  <List
+                    dataSource={uploadedFiles}
+                    renderItem={(file) => (
+                      <List.Item>
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            background: "rgba(0, 0, 0, 0.2)",
+                            borderRadius: "8px",
+                            width: "100%",
+                          }}
+                        >
+                          <NymText ellipsis>{file.name}</NymText>
+                        </div>
+                      </List.Item>
+                    )}
+                  />
+                )}
+              </NymFlexContainer>
+            </NymCard>
           </div>
+          <ThemeSwitch />
         </Content>
 
         <NymConnectionStatus isConnected={isConnected} />

@@ -1,10 +1,12 @@
 // src/store.ts
 import { configureStore } from "@reduxjs/toolkit";
-import { nymApi } from "@/store/api/nymApi.ts";
+import { nymApi } from "@/store/api/nymApi";
 import nymClientReducer from "@/store/slice/nymClientSlice";
+import appReducer from "@/store/slice/appSlice";
 
 export const store = configureStore({
   reducer: {
+    app: appReducer,
     [nymApi.reducerPath]: nymApi.reducer,
     nymClient: nymClientReducer,
   },

@@ -1,30 +1,36 @@
 import { Button, ButtonProps } from "antd";
 import React from "react";
+import { useAppSelector } from "@/hooks/useAppStore";
+import { selectThemeMode } from "@/store/slice/appSlice";
+import { ThemeMode } from "@/types/theme";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
-interface NymButtonProps extends ButtonProps {
-  fullWidth?: boolean;
-}
+const NymButton: React.FC<ButtonProps> = ({ style, ...props }) => {
+  const themeMode = useAppSelector(selectThemeMode);
+  const colors = useThemeColors();
 
-const NymButton: React.FC<NymButtonProps> = ({
-  fullWidth,
-  style,
-  ...props
-}) => {
   const defaultStyle = {
-    color: "#fff",
-    background: "rgba(255, 255, 255, 0.1)",
+    color: colors.textPrimary,
+    background:
+      themeMode === ThemeMode.DARK ? colors.bgOverlay : colors.primary,
     borderRadius: "8px",
     height: "40px",
-    display: "inline-flex",
+    display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    flex: fullWidth ? 1 : undefined,
-    minWidth: 0,
-    width: fullWidth ? "100%" : undefined,
+    width: "100%",
+    border: "none",
+    fontWeight: "500",
+    boxShadow:
+      themeMode === ThemeMode.LIGHT
+        ? `0 2px 4px ${colors.bgSecondary}`
+        : "none",
+    backdropFilter: "blur(10px)",
+    transition: "all 0.2s ease",
     ...style,
   };
 
-  return <Button {...props} style={defaultStyle} />;
+  return <Button block {...props} style={defaultStyle} />;
 };
 
 export default NymButton;
