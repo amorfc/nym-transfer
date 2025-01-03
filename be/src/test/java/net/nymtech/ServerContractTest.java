@@ -23,7 +23,7 @@ import net.nymtech.request.Request;
 import net.nymtech.response.Response;
 
 @Log4j2
-final class ContractTest {
+final class ServerContractTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static Server server;
