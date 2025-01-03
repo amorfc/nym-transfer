@@ -36,9 +36,9 @@ import net.nymtech.response.Response;
 @Log4j2
 final class Server {
 
-  private static final CountDownLatch runningLatch = new CountDownLatch(1);
-  private static final CountDownLatch sessionInitiatedLatch = new CountDownLatch(1);
   private static final ObjectMapper objectMapper = new ObjectMapper();
+  private final CountDownLatch runningLatch = new CountDownLatch(1);
+  private final CountDownLatch sessionInitiatedLatch = new CountDownLatch(1);
   private final Properties properties;
   private final List<BiConsumer<UUID, Response>> sentResponseConsumers;
   @Getter(AccessLevel.PACKAGE) // Testing purposes

@@ -12,6 +12,8 @@ import java.util.UUID;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +26,22 @@ import net.nymtech.response.Response;
 final class ContractTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static Server server;
+  private static HashMap<UUID, Response> responsesReceived = new HashMap<UUID, Response>();
+
+  @BeforeAll
+  static void setUp() throws InterruptedException {
+    var properties = new Properties();
+    properties.setProperty("nym-client-url", "ws://127.0.0.1:1977");
+    properties.setProperty("base-path", Paths.get("src", "test", "resources", "base-path").toAbsolutePath().toString());
+    server = new Server(properties, List.of((id, r) -> responsesReceived.put(id, r)));
+    server.run();
+  }
+
+  @BeforeEach
+  void refresh() {
+    responsesReceived.clear();
+  }
 
   @AfterAll
   static void cleanUp() throws IOException {
@@ -39,15 +57,12 @@ final class ContractTest {
             }
           });
     }
+    server.stop();
   }
 
   @Test
   void should_Upload_File() throws Exception {
     // given
-    var properties = buildTestProperties();
-    var responsesReceived = new HashMap<UUID, Response>();
-    var server = new Server(properties, List.of((id, r) -> responsesReceived.put(id, r)));
-    server.run();
 
     // when
     sendTestUploadFileRequest(server.getNymClient());
@@ -67,14 +82,6 @@ final class ContractTest {
           var actualResponse = responsesReceived.get(UUID.fromString("6f0bb35c-b473-4a12-ab5e-5a5efc7e85ff"));
           return actualResponse.equals(expectedResponse);
         });
-    server.stop();
-  }
-
-  private static Properties buildTestProperties() {
-    var properties = new Properties();
-    properties.setProperty("nym-client-url", "ws://127.0.0.1:1977");
-    properties.setProperty("base-path", Paths.get("src", "test", "resources", "base-path").toAbsolutePath().toString());
-    return properties;
   }
 
   private static void sendTestUploadFileRequest(NymClient nymClient) throws IOException {
