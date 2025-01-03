@@ -18,11 +18,9 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.extern.log4j.Log4j2;
 import net.nymtech.request.Request;
 import net.nymtech.response.Response;
 
-@Log4j2
 final class ServerContractTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
