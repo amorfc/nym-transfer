@@ -1,30 +1,21 @@
 import React from "react";
 import { useThemeColors } from "@/hooks/useThemeColors.ts";
+import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import NymText from "./NymText";
 
-interface NymConnectionStatusProps {
-  isConnected: boolean;
-}
-
-const NymConnectionStatus: React.FC<NymConnectionStatusProps> = ({
-  isConnected,
-}) => {
+const NymConnectionStatus: React.FC = () => {
   const colors = useThemeColors();
+  const { isConnected } = useSelectNymClient();
 
   return (
     <div
       style={{
-        position: "fixed",
-        bottom: 24,
-        left: 24,
         display: "flex",
         alignItems: "center",
         padding: "8px 16px",
         background: colors.bgSecondary,
         border: `1px solid ${colors.borderPrimary}`,
         borderRadius: 8,
-        backdropFilter: "blur(10px)",
-        zIndex: 1000,
       }}
     >
       <div

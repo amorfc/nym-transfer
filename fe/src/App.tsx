@@ -23,12 +23,11 @@ import { MixnetRequestSerilizer } from "@/utils/MixnetRequestSerilizer";
 import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
 import { UploadFile } from "antd/es/upload/interface";
 import NymLayout from "@/components/common/NymLayout";
-import NymConnectionStatus from "@/components/common/NymConnectionStatus";
 import { useTheme } from "@/theme/themeConfig";
-import ThemeToggle from "@/components/common/ThemeToggle";
 import NymCard from "@/components/common/NymCard.tsx";
 import NymText from "@/components/common/NymText";
 import NymFileUpload from "@/components/common/NymFileUpload";
+import NymControlCenter from "@/components/common/NymControlCenter";
 
 const { Content } = Layout;
 
@@ -210,10 +209,9 @@ function App() {
               </NymFlexContainer>
             </NymCard>
           </div>
-          <ThemeToggle />
         </Content>
 
-        <NymConnectionStatus isConnected={isConnected} />
+        <NymControlCenter />
       </NymLayout>
     </ConfigProvider>
   );

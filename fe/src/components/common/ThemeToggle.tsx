@@ -12,17 +12,20 @@ const ThemeToggle: React.FC = () => {
     <NymButton
       onClick={() => dispatch(toggleTheme())}
       style={{
-        position: "fixed",
-        top: 24,
-        right: 24,
         width: "auto",
         minWidth: 40,
         height: 40,
         padding: "0 12px",
-        zIndex: 1000,
       }}
     >
-      {themeMode === ThemeMode.DARK ? "🌙" : "☀️"}
+      <span
+        style={{
+          filter: themeMode === ThemeMode.LIGHT ? "contrast(0.25)" : "none",
+          fontSize: "16px",
+        }}
+      >
+        {themeMode === ThemeMode.DARK ? "🌙" : "☀️"}
+      </span>
     </NymButton>
   );
 };
