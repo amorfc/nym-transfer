@@ -28,6 +28,7 @@ import NymCard from "@/components/common/NymCard.tsx";
 import NymText from "@/components/common/NymText";
 import NymFileUpload from "@/components/common/NymFileUpload";
 import NymControlCenter from "@/components/common/NymControlCenter";
+import NymButtonDebug from "@/components/debug/NymButtonDebug";
 
 const { Content } = Layout;
 
@@ -212,6 +213,7 @@ function App() {
         </Content>
 
         <NymControlCenter />
+        <NymButtonDebug />
       </NymLayout>
     </ConfigProvider>
   );
