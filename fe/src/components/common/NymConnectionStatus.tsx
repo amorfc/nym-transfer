@@ -16,6 +16,7 @@ const NymConnectionStatus: React.FC = () => {
         background: colors.bgSecondary,
         border: `1px solid ${colors.borderPrimary}`,
         borderRadius: 8,
+        backdropFilter: "blur(10px)",
       }}
     >
       <div
