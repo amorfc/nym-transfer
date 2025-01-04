@@ -25,7 +25,7 @@ import { UploadFile } from "antd/es/upload/interface";
 import NymLayout from "@/components/common/NymLayout";
 import NymConnectionStatus from "@/components/common/NymConnectionStatus";
 import { useTheme } from "@/theme/themeConfig";
-import ThemeSwitch from "@/components/common/ThemeSwitch";
+import ThemeToggle from "@/components/common/ThemeToggle";
 import NymCard from "@/components/common/NymCard.tsx";
 import NymText from "@/components/common/NymText";
 import NymFileUpload from "@/components/common/NymFileUpload";
@@ -210,7 +210,7 @@ function App() {
               </NymFlexContainer>
             </NymCard>
           </div>
-          <ThemeSwitch />
+          <ThemeToggle />
         </Content>
 
         <NymConnectionStatus isConnected={isConnected} />
