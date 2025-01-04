@@ -1,6 +1,6 @@
 import React from "react";
 import NymConnectionStatus from "./NymConnectionStatus";
-import ThemeToggle from "./ThemeToggle";
+import NymThemeToggle from "./NymThemeToggle";
 import NymFlexContainer from "./NymFlexContainer";
 
 const NymControlCenter: React.FC = () => {
@@ -18,7 +18,7 @@ const NymControlCenter: React.FC = () => {
       }}
     >
       <NymFlexContainer gap={8}>
-        <ThemeToggle />
+        <NymThemeToggle />
         <NymConnectionStatus />
       </NymFlexContainer>
     </div>

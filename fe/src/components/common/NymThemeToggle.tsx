@@ -5,7 +5,7 @@ import { ThemeMode } from "@/types/theme.ts";
 import NymButton from "./NymButton";
 import { useThemeColors } from "@/hooks/useThemeColors";
 
-const ThemeToggle: React.FC = () => {
+const NymThemeToggle: React.FC = () => {
   const dispatch = useAppDispatch();
   const themeMode = useAppSelector(selectThemeMode);
   const colors = useThemeColors();
@@ -23,16 +23,9 @@ const ThemeToggle: React.FC = () => {
         backdropFilter: "blur(10px)",
       }}
     >
-      <span
-        style={{
-          filter: themeMode === ThemeMode.LIGHT ? "contrast(0.25)" : "none",
-          fontSize: "16px",
-        }}
-      >
-        {themeMode === ThemeMode.DARK ? "🌙" : "☀️"}
-      </span>
+      {themeMode === ThemeMode.DARK ? "🌙" : "☀️"}
     </NymButton>
   );
 };
 
-export default ThemeToggle;
+export default NymThemeToggle;
