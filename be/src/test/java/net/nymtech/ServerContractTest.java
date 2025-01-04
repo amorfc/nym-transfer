@@ -94,6 +94,7 @@ final class ServerContractTest {
           }
           if (!hasDownloadRequestSent.get()) {
             sendTestDownloadFileRequest(); // We know that the file is there
+            hasDownloadRequestSent.set(true);
           }
           if (responsesReceived.size() != 2) {
             return false;
