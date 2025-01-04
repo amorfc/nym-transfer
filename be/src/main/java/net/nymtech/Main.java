@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import lombok.extern.log4j.Log4j2;
+import net.nymtech.server.Server;
 
 @Log4j2
 final class Main {

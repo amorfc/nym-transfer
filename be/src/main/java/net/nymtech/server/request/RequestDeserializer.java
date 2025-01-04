@@ -1,4 +1,4 @@
-package net.nymtech.request;
+package net.nymtech.server.request;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;
@@ -38,7 +38,8 @@ public final class RequestDeserializer {
       } else if (message.position() == 26) {
         type = message.get();
         if (!Request.Type.hasValue(type)) {
-          throw new IllegalArgumentException("No type value exists for given byte: %s!".formatted(type));
+          throw new IllegalArgumentException(
+              "No type value exists for given byte: %s!".formatted(type));
         }
       } else if (message.position() == 27) {
         int clientAddressLength = message.getInt(27);
@@ -50,8 +51,9 @@ public final class RequestDeserializer {
         int contentLength = message.getInt(31 + clientAddress.length);
         message.position(35 + clientAddress.length);
         if (message.remaining() != contentLength) {
-          throw new IllegalArgumentException("Content length is not as expected, expected: %s, actual: %s"
-              .formatted(contentLength, message.remaining()));
+          throw new IllegalArgumentException(
+              "Content length is not as expected, expected: %s, actual: %s".formatted(contentLength,
+                  message.remaining()));
         }
         content = new byte[contentLength];
       } else {

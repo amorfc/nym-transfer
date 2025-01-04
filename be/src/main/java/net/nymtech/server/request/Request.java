@@ -1,4 +1,4 @@
-package net.nymtech.request;
+package net.nymtech.server.request;
 
 import java.util.UUID;
 import lombok.Getter;
@@ -12,8 +12,7 @@ public record Request(UUID id, Request.Type type, byte[] clientAddress, byte[] c
   @Getter
   @Accessors(fluent = true, chain = true, makeFinal = true)
   public enum Type {
-    UPLOAD_FILE((byte) 1),
-    DOWNLOAD_FILE((byte) 2);
+    UPLOAD_FILE((byte) 1), DOWNLOAD_FILE((byte) 2);
 
     private final byte value;
 

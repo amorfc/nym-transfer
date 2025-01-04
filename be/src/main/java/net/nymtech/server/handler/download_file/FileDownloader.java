@@ -1,4 +1,4 @@
-package net.nymtech.handler.download_file;
+package net.nymtech.server.handler.download_file;
 
 import java.io.IOException;
 

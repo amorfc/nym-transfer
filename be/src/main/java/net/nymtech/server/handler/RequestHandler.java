@@ -1,8 +1,7 @@
-package net.nymtech.handler;
+package net.nymtech.server.handler;
 
 import java.util.UUID;
-
-import net.nymtech.response.Response;
+import net.nymtech.server.response.Response;
 
 /**
  * Represents the API that can be called through NYM Mixnet.

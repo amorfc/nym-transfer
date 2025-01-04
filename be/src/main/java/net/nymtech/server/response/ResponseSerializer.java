@@ -1,8 +1,7 @@
-package net.nymtech.response;
+package net.nymtech.server.response;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +16,8 @@ public final class ResponseSerializer {
   private static final byte REQUEST_TAG_SEND = 0x00;
   private static final long CONNECTION_ID_EMPTY = 0L;
 
-  public static ByteBuffer serialize(byte[] clientAddress, UUID id, Response.Status status, byte[] content) {
+  public static ByteBuffer serialize(byte[] clientAddress, UUID id, Response.Status status,
+      byte[] content) {
     var responseLength = 21 + content.length;
     var bufferSize = 1 + clientAddress.length + (2 * Long.BYTES) + responseLength;
     var buffer = ByteBuffer.allocate(bufferSize);

@@ -1,4 +1,4 @@
-package net.nymtech;
+package net.nymtech.server;
 
 /**
  * Represents the exceptions that might occur during {@link NymClient} executions.
@@ -6,15 +6,15 @@ package net.nymtech;
 final class NymClientException extends RuntimeException {
 
   NymClientException() {
-      super();
+    super();
   }
 
   NymClientException(String message) {
-      super(message);
+    super(message);
   }
 
   NymClientException(String message, Throwable cause) {
-      super(message, cause);
+    super(message, cause);
   }
 
   NymClientException(Throwable cause) {

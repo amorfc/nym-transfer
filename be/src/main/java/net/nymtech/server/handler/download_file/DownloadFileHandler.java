@@ -1,4 +1,4 @@
-package net.nymtech.handler.download_file;
+package net.nymtech.server.handler.download_file;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.nymtech.handler.RequestHandler;
-import net.nymtech.response.Response;
-import net.nymtech.response.Response.Status;
+import net.nymtech.server.handler.RequestHandler;
+import net.nymtech.server.response.Response;
+import net.nymtech.server.response.Response.Status;
 
 /**
  * {@code RequestHandler} that handles {@code Request.Type.DOWNLOAD_FILE} typed requests.

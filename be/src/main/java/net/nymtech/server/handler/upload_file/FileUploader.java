@@ -1,4 +1,4 @@
-package net.nymtech.handler.upload_file;
+package net.nymtech.server.handler.upload_file;
 
 import java.io.IOException;
 

@@ -1,7 +1,6 @@
-package net.nymtech.response;
+package net.nymtech.server.response;
 
 import java.util.Arrays;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -38,8 +37,7 @@ public record Response(Response.Status status, byte[] content) {
   @Getter
   @Accessors(fluent = true, chain = true, makeFinal = true)
   public enum Status {
-    SUCCESSFUL((byte) 1),
-    UNSUCCESSFUL((byte) 2);
+    SUCCESSFUL((byte) 1), UNSUCCESSFUL((byte) 2);
 
     private final byte value;
 

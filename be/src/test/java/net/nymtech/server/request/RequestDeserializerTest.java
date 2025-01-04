@@ -1,12 +1,10 @@
-package net.nymtech.request;
+package net.nymtech.server.request;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 final class RequestDeserializerTest {
@@ -22,15 +20,15 @@ final class RequestDeserializerTest {
     // then
     var expectedId = UUID.fromString("6f0bb35c-b473-4a12-ab5e-5a5efc7e85ff");
     var expectedType = Request.Type.UPLOAD_FILE;
-    assertThat(actual).usingRecursiveComparison()
-        .isEqualTo(new Request(expectedId, expectedType, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, "Hello World!".getBytes()));
+    assertThat(actual).usingRecursiveComparison().isEqualTo(new Request(expectedId, expectedType,
+        new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "Hello World!".getBytes()));
   }
 
   private static ByteBuffer buildTestMessage() throws JsonProcessingException {
     var id = UUID.fromString("6f0bb35c-b473-4a12-ab5e-5a5efc7e85ff");
     var type = Request.Type.UPLOAD_FILE;
-    var clientAddress = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    var content =  "Hello World!".getBytes();
+    var clientAddress = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    var content = "Hello World!".getBytes();
 
     var requestLength = 25 + clientAddress.length + content.length;
     var bufferSize = 10 + requestLength;

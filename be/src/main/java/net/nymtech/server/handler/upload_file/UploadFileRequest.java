@@ -1,4 +1,4 @@
-package net.nymtech.handler.upload_file;
+package net.nymtech.server.handler.upload_file;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -12,7 +12,8 @@ record UploadFileRequest(@JsonProperty(required = true) UUID userId,
 
   @Override
   public String toString() {
-    return "UploadFileRequest [userId=%s, title=%s, content=%s]".formatted(userId, title, Arrays.toString(content));
+    return "UploadFileRequest [userId=%s, title=%s, content=%s]".formatted(userId, title,
+        Arrays.toString(content));
   }
 
 }

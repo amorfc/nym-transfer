@@ -1,4 +1,4 @@
-package net.nymtech;
+package net.nymtech.server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,17 +11,16 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-
 import jakarta.websocket.MessageHandler;
 import jakarta.websocket.Session;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.nymtech.handler.RequestHandler;
-import net.nymtech.request.Request;
-import net.nymtech.request.RequestDeserializer;
-import net.nymtech.response.Response;
-import net.nymtech.response.ResponseSerializer;
+import net.nymtech.server.handler.RequestHandler;
+import net.nymtech.server.request.Request;
+import net.nymtech.server.request.RequestDeserializer;
+import net.nymtech.server.response.Response;
+import net.nymtech.server.response.ResponseSerializer;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @Log4j2
@@ -39,8 +38,9 @@ final class NymClient {
   static NymClient build(Session session, List<BiConsumer<UUID, Response>> sentResponseConsumers) {
     Objects.requireNonNull(session, "session cannot be null!");
 
-    List<BiConsumer<UUID, Response>> _sentResponseConsumers = sentResponseConsumers == null ? Collections.emptyList()
-        : Collections.unmodifiableList(sentResponseConsumers);
+    List<BiConsumer<UUID, Response>> _sentResponseConsumers =
+        sentResponseConsumers == null ? Collections.emptyList()
+            : Collections.unmodifiableList(sentResponseConsumers);
 
     return new NymClient(session, new CountDownLatch(1), _sentResponseConsumers);
   }
@@ -65,7 +65,7 @@ final class NymClient {
 
   private synchronized void maybeSetSelfAddress() throws IOException, InterruptedException {
     if (selfAddress == null) {
-      session.getBasicRemote().sendBinary(ByteBuffer.wrap(new byte[] { 0x03 }));
+      session.getBasicRemote().sendBinary(ByteBuffer.wrap(new byte[] {0x03}));
       if (!selfAddressFetchLatch.await(3, TimeUnit.SECONDS)) {
         throw new NymClientException("Self address couldn't be received in 3 seconds!");
       }
@@ -77,8 +77,8 @@ final class NymClient {
       try {
         consumer.accept(requestId, response);
       } catch (Exception e) {
-        log.debug("Exception occurred during execution of {} with {} & {}", consumer.getClass().getName(), requestId,
-            response, e);
+        log.debug("Exception occurred during execution of {} with {} & {}",
+            consumer.getClass().getName(), requestId, response, e);
       }
     }
   }

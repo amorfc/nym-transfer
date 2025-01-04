@@ -1,4 +1,4 @@
-package net.nymtech.handler.upload_file;
+package net.nymtech.server.handler.upload_file;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 final class LocalFileUploader implements FileUploader {
 
-  // TODO: Test this! 
+  // TODO: Test this!
   @Override
   public void upload(String pathStr, byte[] content) throws IOException {
     var path = Path.of(pathStr);

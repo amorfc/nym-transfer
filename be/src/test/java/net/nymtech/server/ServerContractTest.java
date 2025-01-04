@@ -1,4 +1,4 @@
-package net.nymtech;
+package net.nymtech.server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,8 +16,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.nymtech.request.Request;
-import net.nymtech.response.Response;
+import net.nymtech.server.request.Request;
+import net.nymtech.server.response.Response;
 
 final class ServerContractTest {
 
@@ -171,7 +171,7 @@ final class ServerContractTest {
   }
 
   private static byte[] testFile() throws IOException {
-    try (var iStream = Main.class.getClassLoader().getResourceAsStream("test-file.txt")) {
+    try (var iStream = Server.class.getClassLoader().getResourceAsStream("test-file.txt")) {
       return iStream.readAllBytes();
     }
   }

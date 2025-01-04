@@ -1,4 +1,4 @@
-package net.nymtech;
+package net.nymtech.server;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,14 +25,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.nymtech.handler.download_file.DownloadFileHandler;
-import net.nymtech.handler.upload_file.UploadFileHandler;
-import net.nymtech.request.Request.Type;
-import net.nymtech.response.Response;
+import net.nymtech.server.handler.download_file.DownloadFileHandler;
+import net.nymtech.server.handler.upload_file.UploadFileHandler;
+import net.nymtech.server.request.Request.Type;
+import net.nymtech.server.response.Response;
 
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+@RequiredArgsConstructor
 @Log4j2
-final class Server {
+public final class Server {
 
   private static final ExecutorService executor = Executors.newSingleThreadExecutor();
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -43,7 +43,7 @@ final class Server {
   @Getter(AccessLevel.PACKAGE) // Testing purposes
   private NymClient nymClient;
 
-  void run() throws InterruptedException {
+  public void run() throws InterruptedException {
     executor.submit(() -> {
       try {
         log.info("Server is running...");
@@ -64,7 +64,7 @@ final class Server {
     }
   }
 
-  void stop() {
+  public void stop() {
     log.info("Server is being stopped...");
     runningLatch.countDown();
   }
