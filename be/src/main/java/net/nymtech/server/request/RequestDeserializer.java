@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 public final class RequestDeserializer {
 
   /**
-   * Converts the given {@code message} bytes to {@code Request} object.
+   * Converts the given NYM Mixnet 'received' {@code message} bytes to {@code Request} object.
    * 
    * @param message bytes to convert from
    * @return deserialized request
@@ -30,7 +30,7 @@ public final class RequestDeserializer {
     // byte)
     message.position(10);
     if (message.remaining() < 25) {
-      throw new IllegalArgumentException("Request can't be smaller than 25 bytes!");
+      throw new IllegalArgumentException("Payload can't be smaller than 25 bytes!");
     }
     while (message.hasRemaining()) {
       if (message.position() >= 10 && message.position() < 26) {
