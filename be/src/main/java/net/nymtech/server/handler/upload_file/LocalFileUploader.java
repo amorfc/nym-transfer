@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 final class LocalFileUploader implements FileUploader {
 
-  // TODO: Test this!
   @Override
   public void upload(String pathStr, byte[] content) throws IOException {
     var path = Path.of(pathStr);

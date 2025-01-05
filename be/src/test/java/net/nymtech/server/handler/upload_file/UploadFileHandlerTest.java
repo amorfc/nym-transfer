@@ -1,10 +1,9 @@
-package net.nymtech.server.handler.download_file;
+package net.nymtech.server.handler.upload_file;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -19,37 +18,36 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.nymtech.server.response.Response;
-import net.nymtech.server.response.Response.Status;
 
 @ExtendWith(MockitoExtension.class)
-final class DownloadFileHandlerTest {
+final class UploadFileHandlerTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @Mock
-  private FileDownloader downloader;
+  private FileUploader uploader;
 
-  private DownloadFileHandler underTest;
+  private UploadFileHandler underTest;
 
   @BeforeEach
   void setUp() {
-    underTest = new DownloadFileHandler(objectMapper, "/base-path", downloader);
+    underTest = new UploadFileHandler(objectMapper, "/base-path", uploader);
   }
 
   @Test
-  void should_Handle_Downdload_File_Request() throws IOException {
+  void should_Handle_Upload_File_Request() throws IOException {
     // given
-    when(downloader.download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title"))
-        .thenReturn(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
+    doNothing().when(uploader).upload("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title",
+        "Hello World!".getBytes());
 
     // when
     var actual = underTest.handle(TestData.requestId, TestData.requestContent);
 
     // then
+    var expectedResponseContent =
+        new UploadFileResponse("/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
     assertThat(actual)
-        .isEqualTo(new Response(Status.SUCCESSFUL, new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9}));
-    verify(downloader, times(1))
-        .download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
+        .isEqualTo(Response.success(objectMapper.writeValueAsBytes(expectedResponseContent)));
   }
 
   @ParameterizedTest
@@ -62,28 +60,14 @@ final class DownloadFileHandlerTest {
 
     // then
     assertThat(actual).isEqualTo(Response.unexpectedFailure());
-    verifyNoInteractions(downloader);
+    verifyNoInteractions(uploader);
   }
 
   @Test
-  void should_Add_Slash_To_Beginning_Of_Built_Path_When_It_Is_Missing_In_Request_Content()
-      throws IOException {
+  void should_Fail_When_File_Uploading_Failed() throws IOException {
     // given
-    when(downloader.download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title"))
-        .thenReturn(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
-
-    // when
-    var actual = underTest.handle(TestData.requestId, TestData.requestContent);
-
-    // then
-    assertThat(actual).isEqualTo(Response.success(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9}));
-  }
-
-  @Test
-  void should_Fail_When_File_Downloading_Failed() throws IOException {
-    // given
-    when(downloader.download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title"))
-        .thenThrow(new IOException());
+    doThrow(new IOException()).when(uploader).upload(
+        "/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title", "Hello World!".getBytes());
 
     // when
     var actual = underTest.handle(TestData.requestId, TestData.requestContent);
@@ -92,25 +76,27 @@ final class DownloadFileHandlerTest {
     assertThat(actual).isEqualTo(Response.unexpectedFailure());
   }
 
+
   private static Stream<Arguments> argumentsForInvalidRequestContent()
       throws JsonProcessingException {
     return Stream.of(Arguments.of(objectMapper.writeValueAsBytes(objectMapper.createObjectNode())),
         Arguments.of(objectMapper.writeValueAsBytes(
             objectMapper.createObjectNode().put("userId", "27aefbf2-9afa-4c24-a60d-564fbf8d0916"))),
         Arguments.of(objectMapper
-            .writeValueAsBytes(objectMapper.createObjectNode().put("path", "/test-title"))));
+            .writeValueAsBytes(objectMapper.createObjectNode().put("title", "test-title"))),
+        Arguments.of(objectMapper.writeValueAsBytes(
+            objectMapper.createObjectNode().put("content", "Hello World!".getBytes()))));
   }
 
   private static class TestData {
 
-    private static final UUID requestId = UUID.fromString("927e9507-dd95-4b91-bc89-4782a546c511");
+    private static final UUID requestId = UUID.fromString("4b1363d1-241b-4e7a-9c0c-adb46d4507c2");
     private static byte[] requestContent;
     static {
       try {
-        var requestContentNode = objectMapper.createObjectNode();
-        requestContentNode.put("userId", "27aefbf2-9afa-4c24-a60d-564fbf8d0916");
-        requestContentNode.put("path", "/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
-        requestContent = objectMapper.writeValueAsBytes(requestContentNode);
+        requestContent = objectMapper.writeValueAsBytes(
+            new UploadFileRequest(UUID.fromString("27aefbf2-9afa-4c24-a60d-564fbf8d0916"),
+                "test-title", "Hello World!".getBytes()));
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

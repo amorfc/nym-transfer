@@ -3,8 +3,6 @@ package net.nymtech.server.handler.upload_file;
 import java.io.IOException;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.nymtech.server.handler.RequestHandler;
 import net.nymtech.server.response.Response;
@@ -12,16 +10,24 @@ import net.nymtech.server.response.Response;
 /**
  * {@code RequestHandler} that handles {@code Request.Type.UPLOAD_FILE} typed requests.
  */
-@RequiredArgsConstructor
 @Log4j2
 public final class UploadFileHandler implements RequestHandler {
 
-  private static final LocalFileUploader uploader = new LocalFileUploader();
-
-  @NonNull
   private final ObjectMapper objectMapper;
-  @NonNull
   private final String basePath;
+  private final FileUploader uploader;
+
+  public UploadFileHandler(ObjectMapper objectMapper, String basePath) {
+    this.objectMapper = objectMapper;
+    this.basePath = basePath;
+    this.uploader = new LocalFileUploader();
+  }
+
+  UploadFileHandler(ObjectMapper objectMapper, String basePath, FileUploader uploader) {
+    this.objectMapper = objectMapper;
+    this.basePath = basePath;
+    this.uploader = uploader;
+  }
 
   @Override
   public Response handle(UUID requestId, byte[] requestContent) {
@@ -31,14 +37,12 @@ public final class UploadFileHandler implements RequestHandler {
       var content = extractContent(requestId, requestContent);
       var path = extractFilePath(content);
       uploader.upload(basePath + path, content.content());
-      log.debug("{} file uploaded!", requestId);
+      log.debug("{} file uploaded successfully!", requestId);
 
-      return new Response(Response.Status.SUCCESSFUL,
-          objectMapper.writeValueAsBytes(new UploadFileResponse(path)));
+      return Response.success(objectMapper.writeValueAsBytes(new UploadFileResponse(path)));
     } catch (IOException e) {
       log.error("{} couldn't be handled successfully!", requestId, e);
-      return new Response(Response.Status.UNSUCCESSFUL,
-          "Something went unexpectedly wrong!".getBytes());
+      return Response.unexpectedFailure();
     }
   }
 
