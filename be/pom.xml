@@ -24,6 +24,7 @@
     <version.assertj>3.26.3</version.assertj>
     <version.awaitility>4.2.2</version.awaitility>
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
+    <version.mockito>5.15.2</version.mockito>
   </properties>
 
   <dependencies>
@@ -73,6 +74,18 @@
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <version>${version.awaitility}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${version.mockito}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${version.mockito}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

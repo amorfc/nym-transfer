@@ -9,6 +9,35 @@ import lombok.experimental.Accessors;
  */
 public record Response(Response.Status status, byte[] content) {
 
+  /**
+   * Returns the response that indicates that the processing succeeded.
+   * 
+   * @param content response content
+   * @return successful response
+   */
+  public static Response success(byte[] content) {
+    return new Response(Status.SUCCESSFUL, content);
+  }
+
+  /**
+   * Returns the response that indicates that the processing failed.
+   * 
+   * @param message detail about the failure
+   * @return unsuccessful response
+   */
+  public static Response failure(String message) {
+    return new Response(Status.UNSUCCESSFUL, message.getBytes());
+  }
+
+  /**
+   * Returns the response that indicates that the processing failed unexpectedly.
+   * 
+   * @return unexpected failure response
+   */
+  public static Response unexpectedFailure() {
+    return new Response(Status.UNSUCCESSFUL, "Something went unexpectedly wrong!".getBytes());
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;

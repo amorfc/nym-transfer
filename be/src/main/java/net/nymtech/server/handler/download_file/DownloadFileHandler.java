@@ -3,29 +3,34 @@ package net.nymtech.server.handler.download_file;
 import java.io.IOException;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.nymtech.server.handler.RequestHandler;
 import net.nymtech.server.response.Response;
-import net.nymtech.server.response.Response.Status;
 
 /**
  * {@code RequestHandler} that handles {@code Request.Type.DOWNLOAD_FILE} typed requests.
  */
-@RequiredArgsConstructor
 @Log4j2
 public final class DownloadFileHandler implements RequestHandler {
 
+  private final ObjectMapper objectMapper;
+  private final String basePath;
   // TODO: This downloader currently reads everything into the memory and writes to the client
   // afterwards. It's possible to stream to client directly! Let's implement that by aligning with
   // the frontend later on.
-  private final LocalFileDownloader downloader = new LocalFileDownloader();
+  private final FileDownloader downloader;
 
-  @NonNull
-  private final ObjectMapper objectMapper;
-  @NonNull
-  private final String basePath;
+  public DownloadFileHandler(ObjectMapper objectMapper, String basePath) {
+    this.objectMapper = objectMapper;
+    this.basePath = basePath;
+    this.downloader = new LocalFileDownloader();
+  }
+
+  DownloadFileHandler(ObjectMapper objectMapper, String basePath, FileDownloader downloader) {
+    this.objectMapper = objectMapper;
+    this.basePath = basePath;
+    this.downloader = downloader;
+  }
 
   @Override
   public Response handle(UUID requestId, byte[] requestContent) {
@@ -34,13 +39,12 @@ public final class DownloadFileHandler implements RequestHandler {
 
       var content = extractContent(requestId, requestContent);
       var downloaded = downloader.download(extractFilePath(content.path()));
-      log.debug("{} file downloaded!", requestId);
+      log.debug("{} file downloaded successfully!", requestId);
 
-      return new Response(Status.SUCCESSFUL, downloaded);
+      return Response.success(downloaded);
     } catch (IOException e) {
       log.error("{} couldn't be handled successfully!", requestId, e);
-      return new Response(Response.Status.UNSUCCESSFUL,
-          "Something went unexpectedly wrong!".getBytes());
+      return Response.unexpectedFailure();
     }
   }
 

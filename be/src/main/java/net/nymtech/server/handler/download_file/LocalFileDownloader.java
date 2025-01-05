@@ -17,7 +17,7 @@ final class LocalFileDownloader implements FileDownloader {
   @Override
   public byte[] download(String pathStr) throws IOException {
     if (!isPathValid(pathStr)) {
-      return null;
+      throw new IOException("No file found by given path: %s!".formatted(pathStr));
     }
 
     try (FileInputStream is = new FileInputStream(pathStr);
@@ -33,6 +33,7 @@ final class LocalFileDownloader implements FileDownloader {
 
   private static boolean isPathValid(String pathStr) {
     if (pathStr == null || pathStr.trim().isBlank()) {
+      log.debug("Given 'path' is not valid: {}", pathStr);
       return false;
     }
 
@@ -46,8 +47,8 @@ final class LocalFileDownloader implements FileDownloader {
         return false;
       }
     } catch (InvalidPathException e) {
-      log.debug("Given 'pathStr' is not valid!", e);
-      return true;
+      log.debug("Given 'path' is not valid: {}", pathStr, e);
+      return false;
     }
   }
 
