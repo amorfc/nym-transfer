@@ -16,6 +16,15 @@ public final class ResponseSerializer {
   private static final byte REQUEST_TAG_SEND = 0x00;
   private static final long CONNECTION_ID_EMPTY = 0L;
 
+  /**
+   * Converts the given data to NYM Mixnet 'send' {@code message} bytes.
+   * 
+   * @param clientAddress NYM Mixnet address of the application
+   * @param id request ID
+   * @param status response status to send to the client
+   * @param content response content to send to the client
+   * @return serialized request
+   */
   public static ByteBuffer serialize(byte[] clientAddress, UUID id, Response.Status status,
       byte[] content) {
     var responseLength = 21 + content.length;
