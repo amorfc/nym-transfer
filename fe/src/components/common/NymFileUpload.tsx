@@ -5,6 +5,7 @@ import uuid4 from "uuid4";
 import NymButton from "@/components/common/NymButton";
 import NymText from "@/components/common/NymText";
 import NymFlexContainer from "@/components/common/NymFlexContainer";
+import { notify } from "@/utils/GlobalNotification";
 
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "application/pdf"] as const;
 const MAX_FILE_SIZE = 500; // MB
@@ -42,6 +43,13 @@ const NymFileUpload: React.FC<NymFileUploadProps> = ({
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled || uploading) {
+      notify("File upload is disabled", {
+        type: "warning",
+      });
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -68,12 +76,10 @@ const NymFileUpload: React.FC<NymFileUploadProps> = ({
         onChange={handleFileChange}
         style={{ display: "none" }}
         id={inputId}
-        disabled={disabled || uploading}
       />
       <NymButton
         type="text"
         icon={<UploadOutlined />}
-        disabled={disabled || uploading}
         onClick={() => document.getElementById(inputId)?.click()}
       >
         Add files
