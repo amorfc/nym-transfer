@@ -183,6 +183,11 @@ class NymClientManager {
       this.eventHandlers.onDisconnected?.();
     }
 
+    // Clean up all pending requests
+    this.requestManager.clearAllRequests(
+      "Stopping NymClientManager and clearing all pending requests."
+    );
+
     // SDK implementation:
     /*
     if (this.client) {

@@ -67,4 +67,16 @@ export class RequestManager {
       pendingRequest.resolve(successPayload);
     }
   }
+
+  /**
+   * Clean up all active/pending requests by rejecting each one
+   * and clearing the internal collection.
+   */
+  public clearAllRequests(reason = "RequestPool cleared.") {
+    for (const [requestId, pendingRequest] of this.requests.entries()) {
+      clearTimeout(pendingRequest.timeoutId);
+      pendingRequest.reject(new Error(`${reason} RequestId: ${requestId}`));
+    }
+    this.requests.clear();
+  }
 }
