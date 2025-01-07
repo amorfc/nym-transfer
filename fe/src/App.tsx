@@ -45,6 +45,7 @@ function App() {
 
   useEffect(() => {
     const connectClient = async () => {
+      if (isConnected) return;
       try {
         await initClient({
           eventHandlers: {
@@ -61,7 +62,7 @@ function App() {
     connectClient();
     const interval = setInterval(connectClient, 10000);
     return () => clearInterval(interval);
-  }, [dispatch, initClient]);
+  }, [dispatch, initClient, isConnected]);
 
   const totalSize = selectedFiles.reduce(
     (acc, file) => acc + (file.size ?? 0),
