@@ -24,6 +24,14 @@ export class BaseMixnetRequest {
     this.content = payload;
   }
 
+  /**
+   * Returns the request ID UUID4
+   * @returns {string}
+   */
+  public getRequestId(): string {
+    return this.id;
+  }
+
   serialize(): ArrayBuffer {
     const clientAddressBytes = stringToSignedByteArray(this.clientAddress);
     const contentBytes = new TextEncoder().encode(JSON.stringify(this.content));
