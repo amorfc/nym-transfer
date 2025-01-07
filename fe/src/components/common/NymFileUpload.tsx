@@ -1,93 +1,47 @@
 import React from "react";
-import { UploadOutlined } from "@ant-design/icons";
-import { UploadFile, RcFile } from "antd/es/upload/interface";
-import uuid4 from "uuid4";
+import { Upload } from "antd";
+import { RcFile, UploadFile } from "antd/es/upload/interface";
 import NymButton from "@/components/common/NymButton";
-import NymText from "@/components/common/NymText";
-import NymFlexContainer from "@/components/common/NymFlexContainer";
-import { notify } from "@/utils/GlobalNotification";
 
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "application/pdf"] as const;
-const MAX_FILE_SIZE = 500; // MB
-
-interface NymFileUploadProps {
+export interface NymFileUploadProps {
   onFileSelect: (file: UploadFile) => void;
   disabled?: boolean;
   uploading?: boolean;
-  maxSize?: number;
-  allowedTypes?: readonly string[];
+  multiple?: boolean;
 }
 
 const NymFileUpload: React.FC<NymFileUploadProps> = ({
   onFileSelect,
   disabled = false,
   uploading = false,
-  maxSize = MAX_FILE_SIZE,
-  allowedTypes = ALLOWED_TYPES,
+  multiple = false,
 }) => {
-  const validateFile = (file: File): boolean => {
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error(
-        `File type not supported. Allowed types: ${allowedTypes
-          .map((type) => type.split("/")[1])
-          .join(", ")}`
-      );
-    }
-
-    const sizeInMB = file.size / (1024 * 1024);
-    if (sizeInMB > maxSize) {
-      throw new Error(`File size must be less than ${maxSize}MB`);
-    }
-
-    return true;
+  const handleBeforeUpload = (file: File) => {
+    const rcFile = file as RcFile;
+    const uploadFile: UploadFile = {
+      uid: Math.random().toString(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      originFileObj: rcFile,
+      lastModified: file.lastModified,
+    };
+    onFileSelect(uploadFile);
+    return false; // Prevent default upload behavior
   };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (disabled || uploading) {
-      notify("File upload is disabled", {
-        type: "warning",
-      });
-      return;
-    }
-
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (validateFile(file)) {
-      const uploadFile: UploadFile = {
-        uid: uuid4(),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        originFileObj: file as RcFile,
-        lastModifiedDate: new Date(file.lastModified),
-      };
-      onFileSelect(uploadFile);
-    }
-  };
-
-  const inputId = React.useId();
 
   return (
-    <NymFlexContainer vertical gap={8}>
-      <input
-        type="file"
-        accept={allowedTypes.join(",")}
-        onChange={handleFileChange}
-        style={{ display: "none" }}
-        id={inputId}
-      />
-      <NymButton
-        type="text"
-        icon={<UploadOutlined />}
-        onClick={() => document.getElementById(inputId)?.click()}
-      >
-        Add files
+    <Upload.Dragger
+      disabled={disabled || uploading}
+      multiple={multiple}
+      beforeUpload={handleBeforeUpload}
+      showUploadList={false}
+      accept="*/*"
+    >
+      <NymButton block loading={uploading} disabled={disabled}>
+        Add file{multiple ? "s" : ""}
       </NymButton>
-      <NymText tertiary size="small" style={{ textAlign: "center" }}>
-        Up to {maxSize} MB free
-      </NymText>
-    </NymFlexContainer>
+    </Upload.Dragger>
   );
 };
 

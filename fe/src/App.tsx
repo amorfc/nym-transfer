@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import NymFlexContainer from "@/components/common/NymFlexContainer";
-import { Input, List, Layout, ConfigProvider } from "antd";
+import { Input, Layout, ConfigProvider, List } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import {
-  MixnetRequest,
-  MixnetRequestType,
-} from "@/service/request/MixnetRequest";
-import uuid4 from "uuid4";
 import { useAppDispatch } from "@/hooks/useAppStore";
 import {
   setIsConnected,
@@ -19,7 +14,6 @@ import {
   useUploadFileMutation,
 } from "@/store/api/nymApi";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
-import { MixnetRequestSerilizer } from "@/utils/MixnetRequestSerilizer";
 import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
 import { UploadFile } from "antd/es/upload/interface";
 import NymLayout from "@/components/common/NymLayout";
@@ -28,17 +22,20 @@ import NymCard from "@/components/common/NymCard.tsx";
 import NymText from "@/components/common/NymText";
 import NymFileUpload from "@/components/common/NymFileUpload";
 import NymControlCenter from "@/components/common/NymControlCenter";
+import NymButton from "@/components/common/NymButton";
 
 const { Content } = Layout;
 
-const alwaysTryToConnectDEV = false;
+const MAX_STORAGE_GB = 2;
+const GB_TO_BYTES = 1024 * 1024 * 1024;
+const ALLOW_MULTIPLE_FILES = false;
 
 function App() {
   const dispatch = useAppDispatch();
   const { isConnected, selfAddress, recipientAddress } = useSelectNymClient();
   const [title, setTitle] = useState("");
   const [messageText, setMessageText] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
 
   const [initClient] = useInitClientMutation();
@@ -61,14 +58,19 @@ function App() {
       }
     };
 
-    if (!isConnected && alwaysTryToConnectDEV) {
-      connectClient();
-      const interval = setInterval(connectClient, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [isConnected, initClient, dispatch]);
+    connectClient();
+    const interval = setInterval(connectClient, 10000);
+    return () => clearInterval(interval);
+  }, [dispatch, initClient]);
 
-  const handleUpload = async (file: UploadFile) => {
+  const totalSize = selectedFiles.reduce(
+    (acc, file) => acc + (file.size ?? 0),
+    0
+  );
+  const remainingBytes = MAX_STORAGE_GB * GB_TO_BYTES - totalSize;
+  const remainingGB = remainingBytes / GB_TO_BYTES;
+
+  const handleUploadAll = async () => {
     if (!recipientAddress) {
       notifyError("Please enter a recipient address");
       return;
@@ -79,31 +81,35 @@ function App() {
       return;
     }
 
+    if (selectedFiles.length === 0) {
+      notifyError("Please select at least one file");
+      return;
+    }
+
     try {
       setUploading(true);
-      const arrayBuffer = await file.originFileObj?.arrayBuffer();
-      if (!arrayBuffer) throw new Error("Failed to read file");
-
-      const content = new Uint8Array(arrayBuffer);
-      const request = new MixnetRequest(
-        uuid4(),
-        MixnetRequestType.UPLOAD_FILE,
-        {
-          userId: uuid4(),
-          title: title,
-          message: messageText,
-          content: Array.from(content),
+      for (const file of selectedFiles) {
+        if (!file.originFileObj) {
+          throw new Error("No file data available");
         }
+
+        const arrayBuffer = await file.originFileObj.arrayBuffer();
+        const content = new Uint8Array(arrayBuffer);
+
+        await uploadFile({
+          payload: {
+            title: ALLOW_MULTIPLE_FILES ? `${title} - ${file.name}` : title,
+            content,
+          },
+        }).unwrap();
+      }
+
+      notifySuccess(
+        `File${selectedFiles.length > 1 ? "s" : ""} uploaded successfully`
       );
-
-      await uploadFile({
-        payload: MixnetRequestSerilizer.serialize(request),
-      }).unwrap();
-
-      setUploadedFiles((prev) => [...prev, file]);
-      notifySuccess("File uploaded successfully");
       setTitle("");
       setMessageText("");
+      setSelectedFiles([]);
     } catch (error) {
       notifyError(error instanceof Error ? error.message : "Upload failed");
     } finally {
@@ -112,11 +118,20 @@ function App() {
   };
 
   const handleFileSelect = (file: UploadFile) => {
-    try {
-      handleUpload(file);
-    } catch (error) {
-      notifyError(error instanceof Error ? error.message : "Invalid file");
+    if (file.size && file.size > remainingBytes) {
+      notifyError("Not enough storage space remaining");
+      return;
     }
+
+    if (!ALLOW_MULTIPLE_FILES) {
+      setSelectedFiles([file]);
+    } else {
+      setSelectedFiles((prev) => [...prev, file]);
+    }
+  };
+
+  const handleRemoveFile = (uid: string) => {
+    setSelectedFiles((prev) => prev.filter((file) => file.uid !== uid));
   };
 
   return (
@@ -147,7 +162,39 @@ function App() {
                   onFileSelect={handleFileSelect}
                   disabled={!isConnected}
                   uploading={uploading}
+                  multiple={ALLOW_MULTIPLE_FILES}
                 />
+
+                {selectedFiles.length > 0 && (
+                  <List
+                    size="small"
+                    dataSource={selectedFiles}
+                    renderItem={(file) => (
+                      <List.Item
+                        actions={[
+                          <a
+                            key="remove"
+                            onClick={() => handleRemoveFile(file.uid)}
+                          >
+                            Remove
+                          </a>,
+                        ]}
+                      >
+                        <List.Item.Meta
+                          title={file.name}
+                          description={`${(file.size! / (1024 * 1024)).toFixed(
+                            2
+                          )} MB`}
+                        />
+                      </List.Item>
+                    )}
+                    style={{ width: "100%" }}
+                  />
+                )}
+
+                <NymText size="small" style={{ marginTop: 8 }}>
+                  {remainingGB.toFixed(1)} GB remaining
+                </NymText>
 
                 <Input
                   placeholder="Title"
@@ -161,6 +208,23 @@ function App() {
                   onChange={(e) => setMessageText(e.target.value)}
                   rows={4}
                 />
+
+                {selectedFiles.length > 0 && (
+                  <NymButton
+                    block
+                    type="primary"
+                    onClick={handleUploadAll}
+                    loading={uploading}
+                    disabled={!isConnected}
+                  >
+                    Upload{" "}
+                    {ALLOW_MULTIPLE_FILES
+                      ? `${selectedFiles.length} file${
+                          selectedFiles.length !== 1 ? "s" : ""
+                        }`
+                      : "file"}
+                  </NymButton>
+                )}
 
                 {process.env.NODE_ENV === "development" && (
                   <div
@@ -185,26 +249,6 @@ function App() {
                       style={{ marginTop: 8 }}
                     />
                   </div>
-                )}
-
-                {uploadedFiles.length > 0 && (
-                  <List
-                    dataSource={uploadedFiles}
-                    renderItem={(file) => (
-                      <List.Item>
-                        <div
-                          style={{
-                            padding: "8px 12px",
-                            background: "rgba(0, 0, 0, 0.2)",
-                            borderRadius: "8px",
-                            width: "100%",
-                          }}
-                        >
-                          <NymText ellipsis>{file.name}</NymText>
-                        </div>
-                      </List.Item>
-                    )}
-                  />
                 )}
               </NymFlexContainer>
             </NymCard>
