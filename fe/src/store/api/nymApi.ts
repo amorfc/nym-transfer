@@ -2,6 +2,8 @@
 import NymClientManager, {
   NymClientEventHandlers,
 } from "@/service/nym/NymClientManager";
+import { UploadMixnetRequest } from "@/service/request/UploadMixnetRequest";
+import { selectUserId } from "@/store/slice/appSlice";
 import { selectNymClientState } from "@/store/slice/nymClientSlice";
 import { RootState } from "@/store/store";
 import { notifySuccess, notifyWarning } from "@/utils/GlobalNotification";
@@ -40,34 +42,33 @@ export const nymApi = createApi({
         }
       },
     }),
-    sendMessage: builder.mutation<
+    uploadFile: builder.mutation<
       void,
-      { recipient: string; payload: Uint8Array }
+      { payload: { title: string; content: Uint8Array } }
     >({
-      async queryFn({ recipient, payload }) {
-        try {
-          const nymClientManager = NymClientManager.getInstance();
-          await nymClientManager.sendMessage(recipient, payload);
-
-          return { data: undefined };
-        } catch (error) {
-          return { error };
-        }
-      },
-    }),
-    uploadFile: builder.mutation<void, { payload: Uint8Array }>({
       async queryFn({ payload }, { getState }) {
         try {
-          const recipientAddress = selectNymClientState(
+          const { recipientAddress } = selectNymClientState(
             getState() as RootState
-          ).recipientAddress;
+          );
+          const userId = selectUserId(getState() as RootState);
 
           if (!recipientAddress) {
             throw new Error("Recipient address is not set");
           }
 
+          if (!userId) {
+            throw new Error("User ID is not set");
+          }
+
+          const request = new UploadMixnetRequest(recipientAddress, {
+            userId,
+            title: payload.title,
+            content: Array.from(payload.content),
+          });
+
           const nymClientManager = NymClientManager.getInstance();
-          await nymClientManager.sendMessage(recipientAddress, payload);
+          await nymClientManager.sendMessage(recipientAddress, request);
 
           return { data: undefined };
         } catch (error) {
@@ -81,6 +82,5 @@ export const nymApi = createApi({
 export const {
   useInitClientMutation,
   useStopClientMutation,
-  useSendMessageMutation,
   useUploadFileMutation,
 } = nymApi;

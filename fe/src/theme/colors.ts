@@ -14,6 +14,10 @@ export interface ThemeColors {
   textPrimary: string;
   textSecondary: string;
   textTertiary: string;
+  // Button colors
+  buttonBgDark: string;
+  buttonBgDarkHover: string;
+  buttonBgDarkActive: string;
 }
 
 const colors: ThemeColors = {
@@ -37,6 +41,11 @@ const colors: ThemeColors = {
   textPrimary: "#fff",
   textSecondary: "rgba(255, 255, 255, 0.65)",
   textTertiary: "rgba(255, 255, 255, 0.45)",
+
+  // Button colors
+  buttonBgDark: "#000000",
+  buttonBgDarkHover: "rgba(0, 0, 0, 0.06)",
+  buttonBgDarkActive: "rgba(0, 0, 0, 0.08)",
 } as const;
 
 const lightColors: ThemeColors = {
@@ -56,6 +65,11 @@ const lightColors: ThemeColors = {
   textPrimary: "rgba(0, 0, 0, 0.88)",
   textSecondary: "rgba(0, 0, 0, 0.65)",
   textTertiary: "rgba(0, 0, 0, 0.45)",
+
+  // Button colors
+  buttonBgDark: "#000000",
+  buttonBgDarkHover: "rgba(0, 0, 0, 0.06)",
+  buttonBgDarkActive: "rgba(0, 0, 0, 0.08)",
 } as const;
 
 export const themeColors: Record<ThemeMode, ThemeColors> = {
