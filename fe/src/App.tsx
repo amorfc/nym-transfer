@@ -11,6 +11,7 @@ import {
 } from "@/store/slice/nymClientSlice";
 import {
   useInitClientMutation,
+  useStopClientMutation,
   useUploadFileMutation,
 } from "@/store/api/nymApi";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
@@ -39,6 +40,7 @@ function App() {
   const [uploading, setUploading] = useState(false);
 
   const [initClient] = useInitClientMutation();
+  const [stopClient] = useStopClientMutation();
   const [uploadFile] = useUploadFileMutation();
 
   const theme = useTheme();
@@ -61,8 +63,11 @@ function App() {
 
     connectClient();
     const interval = setInterval(connectClient, 10000);
-    return () => clearInterval(interval);
-  }, [dispatch, initClient, isConnected]);
+    return () => {
+      clearInterval(interval);
+      stopClient();
+    };
+  }, [dispatch, initClient, isConnected, stopClient]);
 
   const totalSize = selectedFiles.reduce(
     (acc, file) => acc + (file.size ?? 0),
