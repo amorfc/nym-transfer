@@ -68,9 +68,12 @@ export const nymApi = createApi({
           });
 
           const nymClientManager = NymClientManager.getInstance();
-          await nymClientManager.sendMessage(recipientAddress, request);
+          const response = await nymClientManager.sendMessage(
+            recipientAddress,
+            request
+          );
 
-          return { data: undefined };
+          return { data: response };
         } catch (error) {
           return { error };
         }
