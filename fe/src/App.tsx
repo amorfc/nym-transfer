@@ -4,14 +4,9 @@ import NymFlexContainer from "@/components/common/NymFlexContainer";
 import { Input, Layout, ConfigProvider, List } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useAppDispatch } from "@/hooks/useAppStore";
+import { setRecipientAddress } from "@/store/slice/nymClientSlice";
 import {
-  setIsConnected,
-  setRecipientAddress,
-  setSelfAddress,
-} from "@/store/slice/nymClientSlice";
-import {
-  useInitClientMutation,
-  useStopClientMutation,
+  useKeepAliveNymClientMutation,
   useUploadFileMutation,
 } from "@/store/api/nymApi";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
@@ -39,35 +34,16 @@ function App() {
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  const [initClient] = useInitClientMutation();
-  const [stopClient] = useStopClientMutation();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [keepAliveNymClient, _data] = useKeepAliveNymClientMutation();
   const [uploadFile] = useUploadFileMutation();
 
   const theme = useTheme();
 
   useEffect(() => {
-    const connectClient = async () => {
-      if (isConnected) return;
-      try {
-        await initClient({
-          eventHandlers: {
-            onConnected: () => dispatch(setIsConnected(true)),
-            onSelfAddress: (address: string) =>
-              dispatch(setSelfAddress(address)),
-          },
-        }).unwrap();
-      } catch (error) {
-        console.error("Connection failed:", error);
-      }
-    };
-
-    connectClient();
-    const interval = setInterval(connectClient, 10000);
-    return () => {
-      clearInterval(interval);
-      stopClient();
-    };
-  }, [dispatch, initClient, isConnected, stopClient]);
+    // Start the connection management when the app loads
+    keepAliveNymClient();
+  }, [keepAliveNymClient]);
 
   const totalSize = selectedFiles.reduce(
     (acc, file) => acc + (file.size ?? 0),
@@ -248,7 +224,7 @@ function App() {
                     </NymText>
                     <Input
                       placeholder="Recipient Address"
-                      value={recipientAddress ?? ""}
+                      value={recipientAddress?.toString() ?? ""}
                       onChange={(e) =>
                         dispatch(setRecipientAddress(e.target.value))
                       }

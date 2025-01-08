@@ -1,31 +1,48 @@
 // src/slices/nymApiSlice.ts
-import NymClientManager, {
-  NymClientEventHandlers,
-} from "@/service/nym/NymClientManager";
+import NymClientManager from "@/service/nym/NymClientManager";
 import { UploadMixnetRequest } from "@/service/request/UploadMixnetRequest";
 import { selectUserId } from "@/store/slice/appSlice";
-import { selectNymClientState } from "@/store/slice/nymClientSlice";
+import {
+  selectNymClientState,
+  setIsConnected,
+  setSelfAddress,
+} from "@/store/slice/nymClientSlice";
 import { RootState } from "@/store/store";
-import { notifySuccess, notifyWarning } from "@/utils/GlobalNotification";
+import { notifyWarning } from "@/utils/GlobalNotification";
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const nymApi = createApi({
   reducerPath: "nymApi",
   baseQuery: fakeBaseQuery(),
   endpoints: (builder) => ({
-    initClient: builder.mutation<
-      void,
-      { eventHandlers?: NymClientEventHandlers }
-    >({
-      async queryFn({ eventHandlers }) {
+    keepAliveNymClient: builder.mutation<void, void>({
+      async queryFn(_, { dispatch }) {
         try {
           const nymClientManager = NymClientManager.getInstance();
-          await nymClientManager.init(eventHandlers);
-          notifySuccess("Nym client connected");
+          await nymClientManager.init({
+            onConnected: () => dispatch(setIsConnected(true)),
+            onSelfAddress: (address) => dispatch(setSelfAddress(address)),
+            onDisconnected: () => {
+              dispatch(setIsConnected(false));
+              // If disconnected, try to reconnect after 10 seconds
+              setTimeout(() => {
+                nymApi.endpoints.keepAliveNymClient.initiate(undefined, {
+                  track: false,
+                  fixedCacheKey: "keepAlive",
+                });
+              }, 10000);
+            },
+          });
           return { data: undefined };
         } catch (error) {
-          console.log({ error });
-
+          console.error("Connection failed:", error);
+          // If connection fails, try again after 10 seconds
+          setTimeout(() => {
+            nymApi.endpoints.keepAliveNymClient.initiate(undefined, {
+              track: false,
+              fixedCacheKey: "keepAlive",
+            });
+          }, 10000);
           return { error };
         }
       },
@@ -33,8 +50,7 @@ export const nymApi = createApi({
     stopClient: builder.mutation<void, void>({
       async queryFn() {
         try {
-          const nymClientManager = NymClientManager.getInstance();
-          await nymClientManager.stop();
+          await NymClientManager.getInstance().stop();
           notifyWarning("Nym client stopped/disconnected");
           return { data: undefined };
         } catch (error) {
@@ -48,28 +64,32 @@ export const nymApi = createApi({
     >({
       async queryFn({ payload }, { getState }) {
         try {
-          const { recipientAddress } = selectNymClientState(
+          const { recipientAddress, selfAddress } = selectNymClientState(
             getState() as RootState
           );
           const userId = selectUserId(getState() as RootState);
 
-          if (!recipientAddress) {
-            throw new Error("Recipient address is not set");
+          if (!recipientAddress || !selfAddress) {
+            throw new Error("Recipient or self address is not set");
           }
 
           if (!userId) {
             throw new Error("User ID is not set");
           }
 
-          const request = new UploadMixnetRequest(recipientAddress, {
+          const requestPayload = {
             userId,
             title: payload.title,
             content: Array.from(payload.content),
-          });
+          };
 
-          const nymClientManager = NymClientManager.getInstance();
-          const response = await nymClientManager.sendMessage(
+          const request = new UploadMixnetRequest(
             recipientAddress,
+            selfAddress,
+            requestPayload
+          );
+
+          const response = await NymClientManager.getInstance().sendMessage(
             request
           );
 
@@ -83,7 +103,7 @@ export const nymApi = createApi({
 });
 
 export const {
-  useInitClientMutation,
+  useKeepAliveNymClientMutation,
   useStopClientMutation,
   useUploadFileMutation,
 } = nymApi;

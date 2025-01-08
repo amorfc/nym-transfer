@@ -10,7 +10,16 @@ export interface UploadPayload {
 }
 
 export class UploadMixnetRequest extends BaseMixnetRequest {
-  constructor(clientAddress: string, payload: UploadPayload) {
-    super(MixnetRequestType.UPLOAD_FILE, clientAddress, payload);
+  constructor(
+    recipientAddress: number[],
+    selfAddress: number[],
+    payload: UploadPayload
+  ) {
+    super(
+      MixnetRequestType.UPLOAD_FILE,
+      selfAddress,
+      recipientAddress,
+      payload
+    );
   } // You can add additional methods specific to upload requests here
 }

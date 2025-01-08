@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // import {
 //   createNymMixnetClient,
 //   NymMixnetClient,
@@ -9,25 +10,21 @@ import { RequestManager } from "@/service/request/RequestManager";
 export type NymClientEventHandlers = {
   onConnected?: () => void;
   onDisconnected?: () => void;
-  onSelfAddress?: (address: string) => void;
+  onSelfAddress?: (address: number[]) => void;
   onMessageReceived?: (message: string) => void;
-};
-
-type RawSendWithoutSdkParams = {
-  request: BaseMixnetRequest;
-  recipient: string;
 };
 
 class NymClientManager {
   private static instance: NymClientManager;
   private ws: WebSocket | null = null;
+  private isConnecting: boolean = false;
+  private selfAddress: number[] | null = null;
   // Manages pending requests
   readonly requestManager: RequestManager;
   // For SDK implementation:
   // private client: NymMixnetClient | null = null;
   // private readonly nymApiUrl = "https://validator.nymtech.net/api";
   private eventHandlers: NymClientEventHandlers = {};
-  readonly selfAddress: Uint8Array | null = new Uint8Array([0x00]);
 
   private constructor() {
     this.requestManager = new RequestManager();
@@ -41,92 +38,130 @@ class NymClientManager {
   }
 
   public async init(eventHandlers?: NymClientEventHandlers) {
-    if (eventHandlers) {
-      this.eventHandlers = eventHandlers;
+    // Check if already connected
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      console.debug("WebSocket already connected");
+      return true;
     }
 
+    // Check if connection is in progress
+    if (this.isConnecting) {
+      console.debug("Connection already in progress");
+      return false;
+    }
+
+    // Clean up any existing connection
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+
+    this.isConnecting = true;
     // WebSocket implementation for development:
-    return new Promise((resolve, reject) => {
-      if (
-        this.ws?.readyState === WebSocket.OPEN ||
-        this.ws?.readyState === WebSocket.CONNECTING
-      ) {
-        console.log("WebSocket already connected");
-        return Promise.resolve(true);
-      }
+    this.stop();
+    try {
       const port = "1977";
       const localClientUrl = "ws://127.0.0.1:" + port;
 
       const ws = new WebSocket(localClientUrl);
       this.ws = ws;
 
-      ws.onopen = () => {
-        console.log("WebSocket Connected");
-        this.eventHandlers.onConnected?.();
+      if (eventHandlers) {
+        this.eventHandlers = eventHandlers;
+      }
 
-        // Request self-address
+      ws.onopen = () => {
+        console.debug("WebSocket Connected");
+        this.eventHandlers.onConnected?.();
+        this.isConnecting = false;
+
+        // Send self address request (0x03) as binary data
         const selfAddressRequest = new Uint8Array([0x03]);
-        ws.send(selfAddressRequest);
-        resolve(true);
+        this.ws?.send(selfAddressRequest);
+        Promise.resolve(true);
       };
 
       ws.onerror = (err) => {
-        console.log({ WsOnErrorErr: err });
-        reject(err);
+        this.isConnecting = false;
+        const errorMessage = "WebSocket connection failed";
+        console.error(errorMessage, err);
+        Promise.reject(new Error(errorMessage));
       };
 
       ws.onclose = () => {
+        console.debug("WebSocket Closed");
         this.eventHandlers.onDisconnected?.();
+        this.isConnecting = false;
       };
 
       ws.onmessage = this.handleMessage.bind(this);
-    });
+    } catch (error) {
+      this.isConnecting = false;
+      throw error;
+    }
   }
   private handleMessage(event: MessageEvent) {
-    const rawData = event.data;
+    const blob = event.data as Blob;
 
-    // If the server sends JSON, parse it.
-    // Make sure the server includes a 'requestId' to match the request.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let message: any;
-    try {
-      message = JSON.parse(rawData);
-    } catch (err) {
-      console.warn("Failed to parse incoming message as JSON:", rawData);
-      console.error(err);
-      return;
-    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const arrayBuffer = reader.result as ArrayBuffer;
+      const data = new Uint8Array(arrayBuffer);
 
-    const { requestId, status } = message;
-    if (!requestId) {
-      // If there's no requestId, it's a general notification. You could
-      // still pass it to onMessageReceived or handle it differently.
-      this.eventHandlers.onMessageReceived?.(rawData);
-      return;
-    }
+      // Check if there's enough data to read the tag
+      if (data.length < 1) {
+        console.error("Received data is too short to contain a response tag.");
+        return;
+      }
 
-    // Identify the relevant pending request
-    if (status === "success") {
-      this.requestManager.finalizeRequest(requestId, message);
-    } else if (status === "failure") {
-      this.requestManager.finalizeRequest(
-        requestId,
-        null,
-        new Error(message.error || "Request failed")
-      );
-    } else if (status === "progress") {
-      // If you expect progress updates, you might decide NOT to finalize it yet.
-      // You can store partial info here or handle progress in another way.
-      // For example, you could fire an event or keep track of progress in the request.
-      console.log(
-        `Progress update for requestId=${requestId}: ${JSON.stringify(message)}`
-      );
-    } else {
-      // Fallback for unrecognized status
-      console.warn(
-        `Unrecognized status: '${status}' in response for requestId=${requestId}`
-      );
-    }
+      const responseTag = data[0];
+
+      switch (responseTag) {
+        case 0x00: // Error
+          this.handleError(data);
+          break;
+        case 0x01: // Received
+          this.handleReceived(data);
+          break;
+        case 0x02: // SelfAddress
+          this.handleSelfAddress(data);
+          break;
+        case 0x03: // LaneQueueLength
+          this.handleLaneQueueLength(data);
+          break;
+        default:
+          console.warn(`Unknown response tag: ${responseTag}`);
+      }
+    };
+
+    reader.readAsArrayBuffer(blob);
+  }
+
+  private handleError(_data: Uint8Array) {
+    // Deserialize and handle error response
+    console.error("Error response received.");
+    // Implement deserialization logic here
+  }
+
+  private handleReceived(_data: Uint8Array) {
+    // Deserialize and handle received message
+    console.debug("Received message.");
+    // Implement deserialization logic here
+  }
+
+  private handleSelfAddress(data: Uint8Array) {
+    // Deserialize and handle self address
+    const selfAddressBytes = data.slice(1);
+    const int8Array = new Int8Array(selfAddressBytes);
+    console.debug("Self address received.");
+    this.selfAddress = Array.from(int8Array);
+    this.eventHandlers.onSelfAddress?.(this.selfAddress);
+  }
+
+  private handleLaneQueueLength(_data: Uint8Array) {
+    // Deserialize and handle lane queue length
+    console.debug("Lane queue length received.");
+    // Implement deserialization logic here
   }
 
   // SDK implementation:
@@ -150,7 +185,7 @@ class NymClientManager {
     if (!this.client) return;
 
     this.client.events.subscribeToConnected((e) => {
-      console.log({ e });
+      console.debug({ e });
 
       const {
         kind,
@@ -198,9 +233,9 @@ class NymClientManager {
     */
   }
 
-  public async sendMessage(recipient: string, request: BaseMixnetRequest) {
+  public async sendMessage(request: BaseMixnetRequest) {
     // WebSocket implementation:
-    if (!this.ws || !this.selfAddress) {
+    if (!this.ws) {
       throw new Error("NYM client is not initialized");
     }
 
@@ -217,20 +252,19 @@ class NymClientManager {
       REQUEST_TIMEOUT_MS
     );
 
-    await this.rawSendWithoutSdk({
-      request,
-      recipient,
-    });
+    await this.rawSendWithoutSdk(request);
 
     return pendingPromise;
   }
 
-  public async rawSendWithoutSdk(params: RawSendWithoutSdkParams) {
+  public async rawSendWithoutSdk(request: BaseMixnetRequest) {
     if (!this.ws) {
       throw new Error("NYM client is not initialized");
     }
 
-    const { request } = params;
+    if (!this.selfAddress) {
+      throw new Error("Client address not received");
+    }
 
     // Send the buffer
     this.ws.send(request.serialize());

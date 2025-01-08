@@ -5,9 +5,9 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface NymClientState {
   isConnected: boolean;
   isConnecting: boolean;
-  selfAddress: string | null;
+  selfAddress: number[] | null;
   receivedMessage: string | null;
-  recipientAddress: string | null; // Add recipientAddress field
+  recipientAddress: number[] | null;
 }
 
 const initialState: NymClientState = {
@@ -29,21 +29,31 @@ const nymClientSlice = createSlice({
     setIsConnecting(state, action: PayloadAction<boolean>) {
       state.isConnecting = action.payload;
     },
-    setSelfAddress(state, action: PayloadAction<string | null>) {
+    setSelfAddress(state, action: PayloadAction<number[] | null>) {
       state.selfAddress = action.payload;
     },
     setReceivedMessage(state, action: PayloadAction<string | null>) {
       state.receivedMessage = action.payload;
     },
-    setRecipientAddress(state, action: PayloadAction<string | null>) {
+    setRecipientAddress(state, action: PayloadAction<string>) {
       // Add setRecipientAddress reducer
-      state.recipientAddress = action.payload;
+
+      state.recipientAddress = parseNumberArray(action.payload);
     },
     resetState() {
       return initialState;
     },
   },
 });
+
+//temporary function to parse number array from string
+function parseNumberArray(str: string): number[] {
+  return str
+    .replace(/[[\]\s]/g, "") // Remove brackets and whitespace
+    .split(",")
+    .filter(Boolean) // Remove empty strings
+    .map(Number); // Convert to numbers
+}
 
 export const {
   setIsConnected,
