@@ -1,11 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { isString, isPlainObject, trim, startsWith } from "lodash";
+
 // import {
 //   createNymMixnetClient,
 //   NymMixnetClient,
 //   EventKinds,
 // } from "@nymproject/sdk-full-fat";
-import { BaseMixnetRequest } from "@/service/request/BaseMixnetRequest";
+import {
+  BaseMixnetRequest,
+  ServerResponseTag,
+} from "@/service/request/BaseMixnetRequest";
+import { DownloadMixnetRequest } from "@/service/request/DownloadMixnetRequest";
 import { RequestManager } from "@/service/request/RequestManager";
+import { UploadMixnetRequest } from "@/service/request/UploadMixnetRequest";
+import { BaseMixnetResponse } from "@/service/response/BaseMixnetResponse";
+import { DownloadMixnetResponse } from "@/service/response/DownloadMixnetResponse";
+import { UploadMixnetResponse } from "@/service/response/UploadMixnetResponse";
 
 export type NymClientEventHandlers = {
   onConnected?: () => void;
@@ -117,16 +127,16 @@ class NymClientManager {
       const responseTag = data[0];
 
       switch (responseTag) {
-        case 0x00: // Error
+        case ServerResponseTag.Error: // Error
           this.handleError(data);
           break;
-        case 0x01: // Received
+        case ServerResponseTag.Received: // Received
           this.handleReceived(data);
           break;
-        case 0x02: // SelfAddress
+        case ServerResponseTag.SelfAddress: // SelfAddress
           this.handleSelfAddress(data);
           break;
-        case 0x03: // LaneQueueLength
+        case ServerResponseTag.LaneQueueLength: // LaneQueueLength
           this.handleLaneQueueLength(data);
           break;
         default:
@@ -143,10 +153,57 @@ class NymClientManager {
     // Implement deserialization logic here
   }
 
-  private handleReceived(_data: Uint8Array) {
-    // Deserialize and handle received message
-    console.debug("Received message.");
-    // Implement deserialization logic here
+  private handleReceived(data: Uint8Array) {
+    // Based on your snippet, you skip some bytes before the actual payload.
+    // For example, `const payload = data.slice(10);`
+    // If your real protocol's first 10 bytes are for something else (tag, etc.),
+    // then do that same offset here. Just be consistent with your format.
+    const payload = data.slice(10);
+    try {
+      const baseResponse = BaseMixnetResponse.fromBytes(payload);
+
+      if (baseResponse.isSuccess()) {
+        const contentText = baseResponse.getContentAsText();
+        const trimmedContent = trim(contentText);
+
+        // Check if content looks like JSON
+        if (
+          startsWith(trimmedContent, "{") ||
+          startsWith(trimmedContent, "[")
+        ) {
+          const jsonContent = baseResponse.getContentAsJson();
+          if (jsonContent && isPlainObject(jsonContent)) {
+            console.log("Success JSON Content:", jsonContent);
+            this.requestManager.resolveRequest(
+              baseResponse.requestId,
+              baseResponse
+            );
+            return;
+          }
+        }
+
+        // Handle as plain text
+        if (isString(contentText)) {
+          console.log("Success Text Content:", contentText);
+          this.requestManager.resolveRequest(
+            baseResponse.requestId,
+            baseResponse
+          );
+          return;
+        }
+      } else if (baseResponse.isFailure()) {
+        // For failure, let's parse as text
+        const errorText = baseResponse.getContentAsText();
+        console.error("Server reported an error:", errorText);
+
+        this.requestManager.rejectRequest(
+          baseResponse.requestId,
+          new Error(errorText)
+        );
+      }
+    } catch (err) {
+      console.error("Failed to parse BaseMixnetResponse:", err);
+    }
   }
 
   private handleSelfAddress(data: Uint8Array) {
@@ -233,7 +290,21 @@ class NymClientManager {
     */
   }
 
-  public async sendMessage(request: BaseMixnetRequest) {
+  public async sendDownloadRequest(
+    req: DownloadMixnetRequest
+  ): Promise<DownloadMixnetResponse> {
+    const baseResponse = await this.sendMessage(req);
+    return DownloadMixnetResponse.fromBaseResponse(baseResponse);
+  }
+
+  public async sendUploadRequest(
+    req: UploadMixnetRequest
+  ): Promise<UploadMixnetResponse> {
+    const baseResponse = await this.sendMessage(req);
+    return UploadMixnetResponse.fromBaseResponse(baseResponse);
+  }
+
+  async sendMessage(request: BaseMixnetRequest): Promise<BaseMixnetResponse> {
     // WebSocket implementation:
     if (!this.ws) {
       throw new Error("NYM client is not initialized");
@@ -243,7 +314,7 @@ class NymClientManager {
     const requestId: string = request.getRequestId();
 
     // Decide on a timeout for receiving a response
-    const REQUEST_TIMEOUT_MS = 2000;
+    const REQUEST_TIMEOUT_MS = 20000;
 
     // Create a Promise that will be resolved or rejected when we hear back
     const pendingPromise = this.requestManager.createRequest(

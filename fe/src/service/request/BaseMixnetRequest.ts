@@ -1,3 +1,4 @@
+import { DownloadPayload } from "@/service/request/DownloadMixnetRequest";
 import { UploadPayload } from "@/service/request/UploadMixnetRequest";
 import uuidv4 from "uuid4";
 
@@ -24,7 +25,8 @@ export enum MixnetRequestType {
   DOWNLOAD_FILE = 2,
 }
 
-export type MixnetRequestContent = UploadPayload; /*| DownloadPayload;*/
+export type MixnetRequestContent = UploadPayload | DownloadPayload;
+
 export class BaseMixnetRequest {
   public id: string;
   public type: MixnetRequestType;

@@ -1,82 +1,104 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseMixnetRequest } from "@/service/request/BaseMixnetRequest";
 
-export interface IRequestManager {
+export interface PendingRequest {
   request: BaseMixnetRequest;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolve: (value?: any) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reject: (reason?: any) => void;
-  timeoutId: NodeJS.Timeout;
+  timeoutId: ReturnType<typeof setTimeout>;
 }
 
 export class RequestManager {
-  readonly requests: Map<string, IRequestManager>;
+  private pendingRequests: Map<string, PendingRequest>;
 
   constructor() {
-    this.requests = new Map<string, IRequestManager>();
+    this.pendingRequests = new Map();
   }
 
+  /**
+   * Creates a new pending request and returns a Promise that you can await.
+   * If no response arrives within `timeoutMs`, the promise rejects.
+   */
   public createRequest(
     requestId: string,
     request: BaseMixnetRequest,
     timeoutMs: number
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
-    return new Promise((resolve, reject) => {
-      // Create a timeout that will reject the promise if no response arrives
+    return new Promise<any>((resolve, reject) => {
+      // Overwrite if a request with the same ID already exists
+      if (this.pendingRequests.has(requestId)) {
+        console.warn(`Overwriting an existing request with ID: ${requestId}`);
+        this.pendingRequests.delete(requestId);
+      }
+
+      // Set up a timeout to auto-reject if no response
       const timeoutId = setTimeout(() => {
-        // Remove the request from the pool
-        this.requests.delete(requestId);
+        this.pendingRequests.delete(requestId);
         reject(
           new Error(`Request ${requestId} timed out after ${timeoutMs} ms.`)
         );
       }, timeoutMs);
 
-      // Store the request details in the map
-      this.requests.set(requestId, {
+      const pending: PendingRequest = {
         request,
         resolve,
         reject,
         timeoutId,
-      });
+      };
+
+      // Store in the map
+      this.pendingRequests.set(requestId, pending);
     });
   }
 
-  public finalizeRequest(
-    requestId: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    successPayload?: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    errorPayload?: any
-  ) {
-    const pendingRequest = this.requests.get(requestId);
-    if (!pendingRequest) {
-      // No matching request found; possibly an unknown or expired request
+  /**
+   * Resolves a pending request (success scenario).
+   * @param requestId - The ID of the request you are resolving.
+   * @param successPayload - The data to pass to the original `resolve`.
+   */
+  public resolveRequest(requestId: string, successPayload?: any): void {
+    const pending = this.pendingRequests.get(requestId);
+    if (!pending) {
+      console.warn(`No pending request found to resolve (ID: ${requestId}).`);
       return;
     }
 
-    // Clear the timeout to prevent memory leaks
-    clearTimeout(pendingRequest.timeoutId);
-    // Remove from the map
-    this.requests.delete(requestId);
+    clearTimeout(pending.timeoutId);
+    this.pendingRequests.delete(requestId);
 
-    // Resolve or reject the original promise
-    if (errorPayload) {
-      pendingRequest.reject(errorPayload);
-    } else {
-      pendingRequest.resolve(successPayload);
-    }
+    // Fulfill the original promise
+    pending.resolve(successPayload);
   }
 
   /**
-   * Clean up all active/pending requests by rejecting each one
-   * and clearing the internal collection.
+   * Rejects a pending request (failure scenario).
+   * @param requestId - The ID of the request you are rejecting.
+   * @param errorPayload - The error or reason to pass to the original `reject`.
    */
-  public clearAllRequests(reason = "RequestPool cleared.") {
-    for (const [requestId, pendingRequest] of this.requests.entries()) {
-      clearTimeout(pendingRequest.timeoutId);
-      pendingRequest.reject(new Error(`${reason} RequestId: ${requestId}`));
+  public rejectRequest(requestId: string, errorPayload: any): void {
+    const pending = this.pendingRequests.get(requestId);
+    if (!pending) {
+      console.warn(`No pending request found to reject (ID: ${requestId}).`);
+      return;
     }
-    this.requests.clear();
+
+    clearTimeout(pending.timeoutId);
+    this.pendingRequests.delete(requestId);
+
+    // Reject the original promise
+    pending.reject(errorPayload);
+  }
+
+  /**
+   * Clear all pending requests, rejecting each one with a generic error.
+   */
+  public clearAllRequests(
+    reason = "RequestManager cleared all pending requests."
+  ) {
+    for (const [requestId, pending] of this.pendingRequests.entries()) {
+      clearTimeout(pending.timeoutId);
+      pending.reject(new Error(`${reason} (Request ID: ${requestId})`));
+    }
+    this.pendingRequests.clear();
   }
 }

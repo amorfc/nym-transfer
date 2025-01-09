@@ -1,6 +1,15 @@
 // src/slices/nymApiSlice.ts
 import NymClientManager from "@/service/nym/NymClientManager";
-import { UploadMixnetRequest } from "@/service/request/UploadMixnetRequest";
+import {
+  DownloadMixnetRequest,
+  DownloadPayload,
+} from "@/service/request/DownloadMixnetRequest";
+import {
+  UploadMixnetRequest,
+  UploadPayload,
+} from "@/service/request/UploadMixnetRequest";
+import { DownloadMixnetResponseData } from "@/service/response/DownloadMixnetResponse";
+import { UploadMixnetResponseData } from "@/service/response/UploadMixnetResponse";
 import { selectUserId } from "@/store/slice/appSlice";
 import {
   selectNymClientState,
@@ -58,24 +67,44 @@ export const nymApi = createApi({
         }
       },
     }),
-    uploadFile: builder.mutation<
-      void,
-      { payload: { title: string; content: Uint8Array } }
+
+    downloadFile: builder.mutation<
+      DownloadMixnetResponseData,
+      { payload: Omit<DownloadPayload, "userId"> }
     >({
       async queryFn({ payload }, { getState }) {
         try {
-          const { recipientAddress, selfAddress } = selectNymClientState(
-            getState() as RootState
+          const { recipientAddress, selfAddress, userId } =
+            validateClientState(getState);
+
+          const requestPayload = {
+            userId,
+            path: payload.path,
+          };
+
+          const request = new DownloadMixnetRequest(
+            recipientAddress,
+            selfAddress,
+            requestPayload
           );
-          const userId = selectUserId(getState() as RootState);
 
-          if (!recipientAddress || !selfAddress) {
-            throw new Error("Recipient or self address is not set");
-          }
+          const response =
+            await NymClientManager.getInstance().sendDownloadRequest(request);
 
-          if (!userId) {
-            throw new Error("User ID is not set");
-          }
+          return { data: response.asResponseData() };
+        } catch (error) {
+          return { error };
+        }
+      },
+    }),
+    uploadFile: builder.mutation<
+      UploadMixnetResponseData,
+      { payload: Omit<UploadPayload, "userId"> }
+    >({
+      async queryFn({ payload }, { getState }) {
+        try {
+          const { recipientAddress, selfAddress, userId } =
+            validateClientState(getState);
 
           const requestPayload = {
             userId,
@@ -89,11 +118,10 @@ export const nymApi = createApi({
             requestPayload
           );
 
-          const response = await NymClientManager.getInstance().sendMessage(
-            request
-          );
+          const response =
+            await NymClientManager.getInstance().sendUploadRequest(request);
 
-          return { data: response };
+          return { data: response.asResponseData() };
         } catch (error) {
           return { error };
         }
@@ -106,4 +134,20 @@ export const {
   useKeepAliveNymClientMutation,
   useStopClientMutation,
   useUploadFileMutation,
+  useDownloadFileMutation,
 } = nymApi;
+
+function validateClientState(getState: () => RootState) {
+  const { recipientAddress, selfAddress } = selectNymClientState(getState());
+  const userId = selectUserId(getState());
+
+  if (!recipientAddress || !selfAddress) {
+    throw new Error("Recipient or self address is not set");
+  }
+
+  if (!userId) {
+    throw new Error("User ID is not set");
+  }
+
+  return { recipientAddress, selfAddress, userId };
+}
