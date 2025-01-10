@@ -10,7 +10,6 @@ import { useEffect } from "react";
 import { useKeepAliveNymClientMutation } from "@/store/api/nymApi";
 import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
-import { notifyError } from "@/utils/GlobalNotification";
 import { setIsConnecting } from "@/store/slice/nymClientSlice";
 import { useAppDispatch } from "@/hooks/useAppStore";
 
@@ -35,7 +34,7 @@ function AppLayout() {
     dispatch(setIsConnecting(true));
     // Start the connection management when the app loads
     const timeout = setTimeout(() => {
-    keepAliveNymClient();
+      keepAliveNymClient();
     }, 2000);
 
     return () => clearInterval(timeout);
@@ -57,9 +56,9 @@ function AppLayout() {
         >
           <NymCard>
             <TransitionWrapper>
-            <NymFlexContainer vertical gap={12}>
-              <Outlet />
-            </NymFlexContainer>
+              <NymFlexContainer vertical gap={12}>
+                {<Outlet />}
+              </NymFlexContainer>
             </TransitionWrapper>
           </NymCard>
 

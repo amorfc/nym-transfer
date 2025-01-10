@@ -1,11 +1,11 @@
 import React from "react";
 import { useThemeColors } from "@/hooks/useThemeColors.ts";
-import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import NymText from "./NymText";
+import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 
 const NymConnectionStatus: React.FC = () => {
   const colors = useThemeColors();
-  const { isConnected } = useSelectNymClient();
+  const { isNymClientReady } = useNymClientStatus();
 
   return (
     <div
@@ -24,11 +24,13 @@ const NymConnectionStatus: React.FC = () => {
           width: 8,
           height: 8,
           borderRadius: "50%",
-          backgroundColor: isConnected ? colors.success : colors.error,
+          backgroundColor: isNymClientReady ? colors.success : colors.error,
           marginRight: 8,
         }}
       />
-      <NymText>{isConnected ? "Mixnet Connected" : "Connecting..."}</NymText>
+      <NymText>
+        {isNymClientReady ? "Mixnet Connected" : "Connecting..."}
+      </NymText>
     </div>
   );
 };

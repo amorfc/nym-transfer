@@ -14,6 +14,7 @@ import { selectUserId } from "@/store/slice/appSlice";
 import {
   selectNymClientState,
   setIsConnected,
+  setIsConnecting,
   setSelfAddress,
 } from "@/store/slice/nymClientSlice";
 import { RootState } from "@/store/store";
@@ -29,10 +30,14 @@ export const nymApi = createApi({
         try {
           const nymClientManager = NymClientManager.getInstance();
           await nymClientManager.init({
-            onConnected: () => dispatch(setIsConnected(true)),
+            onConnected: () => {
+              dispatch(setIsConnected(true));
+              dispatch(setIsConnecting(false));
+            },
             onSelfAddress: (address) => dispatch(setSelfAddress(address)),
             onDisconnected: () => {
               dispatch(setIsConnected(false));
+              dispatch(setIsConnecting(false));
               // If disconnected, try to reconnect after 10 seconds
               setTimeout(() => {
                 nymApi.endpoints.keepAliveNymClient.initiate(undefined, {
@@ -53,6 +58,24 @@ export const nymApi = createApi({
             });
           }, 10000);
           return { error };
+        }
+      },
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          // Set `isConnecting` true when query starts
+          dispatch(setIsConnecting(true));
+
+          await queryFulfilled;
+
+          // If successful, set `isConnected` true
+          dispatch(setIsConnected(true));
+          dispatch(setIsConnecting(false));
+        } catch {
+          // On failure, reset both flags
+          dispatch(setIsConnected(false));
+          dispatch(setIsConnecting(false));
+        } finally {
+          dispatch(setIsConnecting(false));
         }
       },
     }),
