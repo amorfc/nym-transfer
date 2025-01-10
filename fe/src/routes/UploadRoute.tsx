@@ -3,12 +3,8 @@ import NymFileUpload from "@/components/common/NymFileUpload";
 import NymText from "@/components/common/NymText";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import { useAppDispatch } from "@/hooks/useAppStore";
-import {
-  useDownloadFileMutation,
-  useUploadFileMutation,
-} from "@/store/api/nymApi";
+import { useUploadFileMutation } from "@/store/api/nymApi";
 import { setRecipientAddress } from "@/store/slice/nymClientSlice";
-import { downloadFileToLocal } from "@/utils/fileUtils";
 import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
 import { Input, List, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -27,7 +23,6 @@ const UploadRoute = () => {
   const [uploading, setUploading] = useState(false);
 
   const [uploadFile] = useUploadFileMutation();
-  const [downloadFile] = useDownloadFileMutation();
 
   const totalSize = selectedFiles.reduce(
     (acc, file) => acc + (file.size ?? 0),
@@ -83,18 +78,6 @@ const UploadRoute = () => {
     }
   };
 
-  const handleDownload = async () => {
-    const { content } = await downloadFile({
-      payload: {
-        path: "/ce1b5850-242b-41c1-8219-8a20bac96136/asdfasdf",
-      },
-    }).unwrap();
-
-    if (content) {
-      downloadFileToLocal(content, "my-name");
-    }
-  };
-
   const handleFileSelect = (file: UploadFile) => {
     if (file.size && file.size > remainingBytes) {
       notifyError("Not enough storage space remaining");
@@ -113,7 +96,6 @@ const UploadRoute = () => {
   };
   return (
     <div>
-      <NymButton onClick={handleDownload}>Download</NymButton>
       <NymFileUpload
         onFileSelect={handleFileSelect}
         disabled={!isConnected}
