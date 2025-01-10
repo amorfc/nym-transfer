@@ -10,7 +10,8 @@ const NymCard: React.FC<NymCardProps> = ({ children, style, ...props }) => {
   const colors = useThemeColors();
 
   const defaultStyle = {
-    width: "400px",
+    width: "420px",
+    height: "480px",
     background: colors.bgOverlay,
     borderRadius: "16px",
     border: `1px solid ${colors.borderPrimary}`,
