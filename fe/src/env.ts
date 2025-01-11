@@ -37,7 +37,7 @@ const envSchema = z.object({
 const parsedEnv = envSchema.parse({
   VITE_DOMAIN_BASE_URL: import.meta.env.VITE_DOMAIN_BASE_URL,
   NODE_ENV: import.meta.env.MODE,
-  NYM_CLIENT_ADDRESS_BYTE_ARR: import.meta.env.VITE_NYM_CLIENT_ADDRESS_BYTE_ARR,
+  // NYM_CLIENT_ADDRESS_BYTE_ARR: import.meta.env.VITE_NYM_CLIENT_ADDRESS_BYTE_ARR,
 });
 
 // Expose validated and parsed environment variables
