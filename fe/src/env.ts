@@ -1,9 +1,11 @@
 import { z } from "zod";
 
 // Define a custom function to parse a JSON-like string into an array of numbers
+// Custom function to parse the environment variable
 function parseArrayStringToNumber(value: string): number[] {
   try {
-    const parsed = JSON.parse(value);
+    const trimmedValue = value.trim();
+    const parsed = JSON.parse(trimmedValue);
     if (
       Array.isArray(parsed) &&
       parsed.every((item) => typeof item === "number")
@@ -13,7 +15,7 @@ function parseArrayStringToNumber(value: string): number[] {
     throw new Error("Invalid format for NYM_CLIENT_ADDRESS_BYTE_ARR");
   } catch (error) {
     throw new Error(
-      `Failed to parse NYM_CLIENT_ADDRESS_BYTE_ARR as an array of numbers ${error}`
+      `Failed to parse NYM_CLIENT_ADDRESS_BYTE_ARR as an array of numbers: ${error}`
     );
   }
 }
