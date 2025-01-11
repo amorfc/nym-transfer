@@ -57,12 +57,12 @@ export class BaseMixnetRequest {
 
   serialize(): ArrayBuffer {
     const selfAddressBytes = this.selfAddress;
-    const recipentAddressBytes = this.recipientAddress;
+    const recipientAddressBytes = this.recipientAddress;
 
     const contentBytes = new TextEncoder().encode(JSON.stringify(this.content));
     const requestLength =
       21 + selfAddressBytes.length + 4 + contentBytes.length;
-    const bufferSize = 1 + recipentAddressBytes.length + 2 * 8 + requestLength;
+    const bufferSize = 1 + recipientAddressBytes.length + 2 * 8 + requestLength;
 
     // Create buffer and fill it following Java implementation
     const buffer = new ArrayBuffer(bufferSize);
@@ -71,7 +71,7 @@ export class BaseMixnetRequest {
 
     // Request tag + client address + connection ID + request length
     view.setUint8(offset++, 0x00); // Request tag
-    recipentAddressBytes.forEach((byte) => view.setUint8(offset++, byte)); // client address
+    recipientAddressBytes.forEach((byte) => view.setUint8(offset++, byte)); // client address
     view.setBigUint64(offset, BigInt(0)); // connection ID
     offset += 8;
     view.setBigUint64(offset, BigInt(requestLength)); // request length
