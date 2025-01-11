@@ -5,11 +5,12 @@ import { FireWorksLottie } from "@/components/lotties/FireWorksLottie";
 import { LoadingLottie } from "@/components/lotties/LoadingLottie";
 import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
+import { ROUTES } from "@/routes/ROUTES";
 import { useDownloadFileMutation } from "@/store/api/nymApi";
 import { downloadFileToLocal } from "@/utils/fileUtils";
 import { Layout } from "antd";
 import { useCallback, useEffect } from "react";
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 
 const DownloadRoute = () => {
   // Extract parameters from the URL
@@ -41,7 +42,19 @@ const DownloadRoute = () => {
     if (isNymClientReady) {
       download();
     }
-  }, [isUninitialized, fileId, name, handleDownload, isNymClientReady]);
+  }, [
+    isUninitialized,
+    fileId,
+    name,
+    handleDownload,
+    isNymClientReady,
+    goToUpload,
+  ]);
+
+  if (!fileId || fileId.startsWith(":") || !name || name.startsWith(":")) {
+    console.error("Invalid parameters:", { fileId, name });
+    return <Navigate to={ROUTES.UPLOAD} replace />;
+  }
 
   if (isLoading) {
     return <LoadingLottie />;
