@@ -13,6 +13,7 @@ import TextArea from "antd/es/input/TextArea";
 import { useEffect, useState } from "react";
 import NymUploadAllButton from "@/components/button/NymUploadAllButton";
 import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
+import { FireWorksLottie } from "@/components/lotties/FireWorksLottie";
 
 const MAX_STORAGE_GB = 2;
 const GB_TO_BYTES = 1024 * 1024 * 1024;
@@ -132,7 +133,7 @@ const UploadRoute = () => {
   if (uploadState === UploadState.COMPLETED && data) {
     return (
       <TransitionWrapper>
-        <LoadingLottie />
+        <FireWorksLottie />
         <div
           style={{
             flex: 1,
