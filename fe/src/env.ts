@@ -28,9 +28,9 @@ const envSchema = z.object({
     .optional()
     .default("http://localhost:5173"),
   NODE_ENV: z.enum(["development", "production", "test"]),
-  NYM_CLIENT_ADDRESS_BYTE_ARR: z
-    .string()
-    .transform((value) => parseArrayStringToNumber(value)), // Use the custom transformation
+  // NYM_CLIENT_ADDRESS_BYTE_ARR: z
+  //   .string()
+  //   .transform((value) => parseArrayStringToNumber(value)), // Use the custom transformation
 });
 
 // Parse and validate the environment variables
@@ -43,6 +43,8 @@ const parsedEnv = envSchema.parse({
 // Expose validated and parsed environment variables
 export const Env = {
   DOMAIN_BASE_URL: parsedEnv.VITE_DOMAIN_BASE_URL,
-  NYM_CLIENT_ADDRESS_BYTE_ARR: parsedEnv.NYM_CLIENT_ADDRESS_BYTE_ARR, // Now an array of numbers
+  NYM_CLIENT_ADDRESS_BYTE_ARR: parseArrayStringToNumber(
+    import.meta.env.VITE_NYM_CLIENT_ADDRESS_BYTE_ARR
+  ), // Now an array of numbers
   IS_DEV: parsedEnv.NODE_ENV === "development",
 };
