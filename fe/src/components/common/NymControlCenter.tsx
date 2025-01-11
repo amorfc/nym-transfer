@@ -1,7 +1,7 @@
+import NymConnectionStatus from "@/components/common/NymConnectionStatus";
+import NymThemeToggle from "@/components/button/NymThemeToggle";
+import NymFlexContainer from "@/components/common/NymFlexContainer";
 import React from "react";
-import NymConnectionStatus from "./NymConnectionStatus";
-import NymThemeToggle from "./NymThemeToggle";
-import NymFlexContainer from "./NymFlexContainer";
 
 const NymControlCenter: React.FC = () => {
   return (
