@@ -14,7 +14,7 @@ const NymCard: React.FC<NymCardProps> = ({ children, style, ...props }) => {
   const colors = useThemeColors();
 
   const defaultStyle = {
-    width: "420px",
+    width: "400px",
     minHeight: "480px",
     background: colors.bgOverlay,
     borderRadius: "16px",
@@ -23,7 +23,7 @@ const NymCard: React.FC<NymCardProps> = ({ children, style, ...props }) => {
   };
 
   return (
-    <Card style={defaultStyle} {...props}>
+    <Card style={defaultStyle} bodyStyle={{ padding: "1rem" }} {...props}>
       {isConnecting ? (
         <LoadingLottie />
       ) : (

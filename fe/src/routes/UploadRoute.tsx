@@ -1,20 +1,21 @@
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
-import NymButton from "@/components/common/NymButton";
-import NymFileUpload from "@/components/common/NymFileUpload";
+import NymFileUpload from "@/components/button/NymFileUpload";
 import NymText from "@/components/common/NymText";
+import NymUploadedFilePreview from "@/components/common/NymUploadedFilePreview";
 import { LoadingLottie } from "@/components/lotties/LoadingLottie";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import { useNymFileLink } from "@/hooks/useNymFileLink";
 import { useUploadFileMutation } from "@/store/api/nymApi";
 import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
-import { Input, List, UploadFile } from "antd";
+import { Input, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useEffect, useState } from "react";
+import NymUploadAllButton from "@/components/button/NymUploadAllButton";
+import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
 
 const MAX_STORAGE_GB = 2;
 const GB_TO_BYTES = 1024 * 1024 * 1024;
-const ALLOW_MULTIPLE_FILES = false;
 
 enum UploadState {
   INITIAL, // Initial state where no input has been provided.
@@ -23,6 +24,7 @@ enum UploadState {
 }
 
 const UploadRoute = () => {
+  const { multipleFiles } = useFileUploadConfig();
   const { recipientAddress } = useSelectNymClient();
   const { isNymClientReady } = useNymClientStatus();
   const { createNymDownloadLink } = useNymFileLink();
@@ -36,10 +38,8 @@ const UploadRoute = () => {
 
   const [uploadFile, { isLoading, isSuccess, data }] = useUploadFileMutation();
 
-  const totalSize = selectedFiles.reduce(
-    (acc, file) => acc + (file.size ?? 0),
-    0
-  );
+  const totalSize =
+    selectedFiles?.reduce((acc, file) => acc + (file.size ?? 0), 0) ?? 0;
   const remainingBytes = MAX_STORAGE_GB * GB_TO_BYTES - totalSize;
   const remainingGB = remainingBytes / GB_TO_BYTES;
 
@@ -71,7 +71,7 @@ const UploadRoute = () => {
 
         await uploadFile({
           payload: {
-            title: ALLOW_MULTIPLE_FILES ? `${title} - ${file.name}` : title,
+            title: multipleFiles ? `${title} - ${file.name}` : title,
             content,
           },
         }).unwrap();
@@ -96,15 +96,15 @@ const UploadRoute = () => {
       return;
     }
 
-    if (!ALLOW_MULTIPLE_FILES) {
+    if (!multipleFiles) {
       setSelectedFiles([file]);
     } else {
       setSelectedFiles((prev) => [...prev, file]);
     }
   };
 
-  const handleRemoveFile = (uid: string) => {
-    setSelectedFiles((prev) => prev.filter((file) => file.uid !== uid));
+  const handleRemoveFile = (file: UploadFile) => {
+    setSelectedFiles((prev) => prev.filter((f) => f.uid !== file.uid));
   };
 
   useEffect(() => {
@@ -147,36 +147,25 @@ const UploadRoute = () => {
   }
 
   return (
-    <div>
-      <TransitionWrapper>
+    <TransitionWrapper>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem", // Creates space between each child
+        }}
+      >
         <NymFileUpload
           onFileSelect={handleFileSelect}
           disabled={!isNymClientReady}
           uploading={uploading}
-          multiple={ALLOW_MULTIPLE_FILES}
         />
 
-        {selectedFiles.length > 0 && (
-          <List
-            size="small"
-            dataSource={selectedFiles}
-            renderItem={(file) => (
-              <List.Item
-                actions={[
-                  <a key="remove" onClick={() => handleRemoveFile(file.uid)}>
-                    Remove
-                  </a>,
-                ]}
-              >
-                <List.Item.Meta
-                  title={file.name}
-                  description={`${(file.size! / (1024 * 1024)).toFixed(2)} MB`}
-                />
-              </List.Item>
-            )}
-            style={{ width: "100%" }}
-          />
-        )}
+        <NymUploadedFilePreview
+          fileList={selectedFiles}
+          onFileRemove={handleRemoveFile}
+          listType="picture-card"
+        />
 
         <NymText size="small" style={{ marginTop: 8 }}>
           {remainingGB.toFixed(1)} GB remaining
@@ -194,25 +183,16 @@ const UploadRoute = () => {
           onChange={(e) => setMessageText(e.target.value)}
           rows={4}
         />
-
         {selectedFiles.length > 0 && (
-          <NymButton
-            block
-            type="primary"
+          <NymUploadAllButton
             onClick={handleUploadAll}
             loading={uploading}
             disabled={!isNymClientReady}
-          >
-            Upload{" "}
-            {ALLOW_MULTIPLE_FILES
-              ? `${selectedFiles.length} file${
-                  selectedFiles.length !== 1 ? "s" : ""
-                }`
-              : "file"}
-          </NymButton>
+            fileCount={selectedFiles.length}
+          />
         )}
-      </TransitionWrapper>
-    </div>
+      </div>
+    </TransitionWrapper>
   );
 };
 

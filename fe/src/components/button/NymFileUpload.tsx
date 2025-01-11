@@ -2,20 +2,21 @@ import React from "react";
 import { Upload } from "antd";
 import { RcFile, UploadFile } from "antd/es/upload/interface";
 import { InboxOutlined } from "@ant-design/icons";
+import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
 
 export interface NymFileUploadProps {
   onFileSelect: (file: UploadFile) => void;
   disabled?: boolean;
   uploading?: boolean;
-  multiple?: boolean;
 }
 
 const NymFileUpload: React.FC<NymFileUploadProps> = ({
   onFileSelect,
   disabled = false,
   uploading = false,
-  multiple = false,
 }) => {
+  const { maxFileCount, multipleFiles } = useFileUploadConfig();
+
   const handleBeforeUpload = (file: File) => {
     const rcFile = file as RcFile;
     const uploadFile: UploadFile = {
@@ -33,7 +34,8 @@ const NymFileUpload: React.FC<NymFileUploadProps> = ({
   return (
     <Upload.Dragger
       disabled={disabled || uploading}
-      multiple={multiple}
+      multiple={multipleFiles}
+      maxCount={maxFileCount}
       beforeUpload={handleBeforeUpload}
       showUploadList={false}
       accept="*/*"
@@ -43,7 +45,7 @@ const NymFileUpload: React.FC<NymFileUploadProps> = ({
       </p>
       <p className="ant-upload-text">
         {`Click or drag ${
-          multiple ? "files" : "a file"
+          multipleFiles ? "files" : "a file"
         } to this area to upload`}
       </p>
       <p className="ant-upload-hint">
