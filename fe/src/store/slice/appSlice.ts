@@ -5,11 +5,15 @@ import { ThemeMode } from "@/types/theme.ts";
 interface AppState {
   userId: string | null;
   themeMode: ThemeMode;
+  maxFileCount: number;
+  multipleFiles: boolean;
 }
 
 const initialState: AppState = {
   userId: null,
   themeMode: ThemeMode.DARK,
+  maxFileCount: 3,
+  multipleFiles: false,
 };
 
 const appSlice = createSlice({
@@ -36,4 +40,8 @@ export const { toggleTheme, setThemeMode, setUserId, removeUserId } =
   appSlice.actions;
 export const selectThemeMode = (state: RootState) => state.app.themeMode;
 export const selectUserId = (state: RootState) => state.app.userId;
+export const selectMaxFileCount = (state: RootState) => state.app.maxFileCount;
+export const selectMultipleFiles = (state: RootState) =>
+  state.app.multipleFiles;
+
 export default appSlice.reducer;
