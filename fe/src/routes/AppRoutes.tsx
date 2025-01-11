@@ -16,7 +16,7 @@ function AppRoutes() {
         <Route path={ROUTES.DOWNLOAD} element={<DownloadRoute />} />
 
         {/* Catch-all route to handle invalid paths */}
-        {/* <Route path={ROUTES.NOT_FOUND} element={<UploadRoute />} /> */}
+        <Route path={ROUTES.NOT_FOUND} element={<UploadRoute />} />
         <Route
           path={ROUTES.NOT_FOUND}
           element={<Navigate to={ROUTES.UPLOAD} replace />}
