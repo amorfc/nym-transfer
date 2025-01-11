@@ -20,10 +20,10 @@ const getAntdTheme = (colors: ThemeColors): ThemeConfig => ({
   components: {
     Button: {
       algorithm: true,
-      colorText: colors.textPrimary,
-      colorBgContainer: colors.bgOverlay,
-      colorBgTextHover: `${colors.primary}26`,
-      colorBgTextActive: `${colors.primary}40`,
+      colorText: colors.buttonText,
+      colorBgContainer: colors.buttonBg, // Matches button base
+      colorBgTextHover: colors.buttonHoverBg, // Button hover background
+      colorBgTextActive: colors.buttonActiveBg, // Button active background
       colorPrimary: colors.primary,
       colorPrimaryBorder: colors.primary,
       colorPrimaryHover: colors.primary,
@@ -39,28 +39,39 @@ const getAntdTheme = (colors: ThemeColors): ThemeConfig => ({
       colorBorder: colors.borderPrimary,
       colorText: colors.textPrimary,
       colorTextPlaceholder: colors.textSecondary,
+      borderRadius: 8,
     },
     Card: {
       algorithm: true,
-      colorBgContainer: colors.bgOverlay,
-      colorBorder: colors.borderPrimary,
+      colorBgContainer: colors.bgSecondary, // Matches card container
+      colorBorder: colors.borderPrimary, // Subtle border for cards
+      borderRadius: 12,
     },
     Typography: {
       colorText: colors.textPrimary,
       colorTextSecondary: colors.textSecondary,
+      colorLink: colors.primary,
+      colorLinkHover: colors.buttonHoverBg,
+      colorLinkActive: colors.buttonActiveBg,
     },
     Upload: {
       colorText: colors.textPrimary,
       colorTextDescription: colors.textSecondary,
+      colorBgContainer: colors.bgOverlay,
+      colorBorder: colors.borderPrimary,
+      borderRadius: 8,
     },
     List: {
       colorText: colors.textPrimary,
       colorBgContainer: "transparent",
+      colorBorder: colors.borderPrimary,
+      colorTextSecondary: colors.textSecondary,
     },
     Notification: {
-      colorBgElevated: colors.bgSecondary,
+      colorBgElevated: colors.bgSecondary, // Matches elevated background
       colorText: colors.textPrimary,
       colorTextHeading: colors.textPrimary,
+      borderRadius: 12,
     },
   },
 });
