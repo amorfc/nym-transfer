@@ -97,8 +97,9 @@ export const nymApi = createApi({
     >({
       async queryFn({ payload }, { getState }) {
         try {
-          const { recipientAddress, selfAddress, userId } =
-            validateClientState(getState);
+          const { recipientAddress, selfAddress, userId } = validateClientState(
+            getState as () => RootState
+          );
 
           const requestPayload = {
             userId,
@@ -126,8 +127,9 @@ export const nymApi = createApi({
     >({
       async queryFn({ payload }, { getState }) {
         try {
-          const { recipientAddress, selfAddress, userId } =
-            validateClientState(getState);
+          const { recipientAddress, selfAddress, userId } = validateClientState(
+            getState as () => RootState
+          );
 
           const requestPayload = {
             userId,
