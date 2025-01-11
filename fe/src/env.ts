@@ -28,16 +28,16 @@ const envSchema = z.object({
     .optional()
     .default("http://localhost:5173"),
   NODE_ENV: z.enum(["development", "production", "test"]),
-  // NYM_CLIENT_ADDRESS_BYTE_ARR: z
-  //   .string()
-  //   .transform((value) => parseArrayStringToNumber(value)), // Use the custom transformation
+  NYM_CLIENT_ADDRESS_BYTE_ARR: z
+    .string()
+    .transform((value) => parseArrayStringToNumber(value)), // Use the custom transformation
 });
 
 // Parse and validate the environment variables
 const parsedEnv = envSchema.parse({
   VITE_DOMAIN_BASE_URL: import.meta.env.VITE_DOMAIN_BASE_URL,
   NODE_ENV: import.meta.env.MODE,
-  // NYM_CLIENT_ADDRESS_BYTE_ARR: import.meta.env.VITE_NYM_CLIENT_ADDRESS_BYTE_ARR,
+  NYM_CLIENT_ADDRESS_BYTE_ARR: import.meta.env.VITE_NYM_CLIENT_ADDRESS_BYTE_ARR,
 });
 
 // Expose validated and parsed environment variables
