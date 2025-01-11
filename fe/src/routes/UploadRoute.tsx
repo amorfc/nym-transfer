@@ -28,11 +28,13 @@ const UploadRoute = () => {
   const { recipientAddress } = useSelectNymClient();
   const { isNymClientReady } = useNymClientStatus();
   const { createNymDownloadLink } = useNymFileLink();
-  const [title, setTitle] = useState("asdfasdf");
+  const [title, setTitle] = useState("");
   const [uploadState, setUploadState] = useState<UploadState>(
     UploadState.INITIAL
   );
-  const [messageText, setMessageText] = useState("");
+  const [messageText, setMessageText] = useState(
+    "Messages disabled for now 🦀"
+  );
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
 
@@ -178,7 +180,7 @@ const UploadRoute = () => {
         />
 
         <TextArea
-          placeholder="Message"
+          disabled
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
           rows={4}
