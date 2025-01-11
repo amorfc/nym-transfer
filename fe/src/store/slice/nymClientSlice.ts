@@ -1,4 +1,5 @@
 // src/slices/nymClientSlice.ts
+import { Env } from "@/env";
 import { RootState } from "@/store/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
@@ -15,7 +16,7 @@ const initialState: NymClientState = {
   isConnecting: false,
   selfAddress: null,
   receivedMessage: null,
-  recipientAddress: null,
+  recipientAddress: Env.NYM_CLIENT_ADDRESS_BYTE_ARR,
 };
 
 const nymClientSlice = createSlice({
