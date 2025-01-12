@@ -14,6 +14,7 @@ import { useAppDispatch } from "@/hooks/useAppStore";
 import NymLogoSvg from "@/components/svg/NymLogoSvg";
 import { ROUTES } from "@/routes/ROUTES";
 import { useThemeColors } from "@/hooks/useThemeColors";
+import NymText from "@/components/common/NymText";
 
 const { Content } = Layout;
 
@@ -44,22 +45,31 @@ function AppLayout() {
   return (
     <ConfigProvider wave={{ disabled: true }} theme={theme}>
       <NymLayout>
+        <Link to={ROUTES.UPLOAD} style={{ color: colors.primary }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              paddingTop: "rem",
+              paddingLeft: "2rem",
+            }}
+          >
+            <NymLogoSvg />
+            <NymText color={colors.primary} weight="bold">
+              TRANSFER
+            </NymText>
+          </div>
+        </Link>
         <Content
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexDirection: "column",
+            gap: "1rem",
           }}
         >
-          <Link to={ROUTES.UPLOAD} style={{ color: colors.primary }}>
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
-            >
-              <NymLogoSvg />
-              <h4 style={{ fontWeight: "bolder" }}>TRANSFER</h4>
-            </div>
-          </Link>
           <NymCard>
             <TransitionWrapper>
               <NymFlexContainer vertical gap={12}>

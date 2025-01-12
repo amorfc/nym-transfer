@@ -20,6 +20,7 @@ const NymText: React.FC<NymTextProps> = ({
   tertiary,
   weight = "regular",
   children,
+  color,
   ...props
 }) => {
   const colors = useThemeColors();
@@ -49,6 +50,8 @@ const NymText: React.FC<NymTextProps> = ({
   };
 
   const getColor = () => {
+    if (color) return color;
+
     if (tertiary) return colors.textTertiary;
     if (secondary) return colors.textSecondary;
     return colors.textPrimary;
