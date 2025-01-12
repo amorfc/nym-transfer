@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/store/store.ts";
 import { ThemeMode } from "@/types/theme.ts";
+import uuid4 from "uuid4";
+import { storage } from "@/utils/storage";
 
 interface AppState {
   userId: string | null;
@@ -9,8 +11,19 @@ interface AppState {
   multipleFiles: boolean;
 }
 
+// Get existing userId or generate new one
+const getInitialUserId = (): string => {
+  const storedUserId = storage.getUserId();
+  if (storedUserId) {
+    return storedUserId;
+  }
+  const newUserId = uuid4();
+  storage.setUserId(newUserId);
+  return newUserId;
+};
+
 const initialState: AppState = {
-  userId: null,
+  userId: getInitialUserId(),
   themeMode: ThemeMode.DARK,
   maxFileCount: 3,
   multipleFiles: false,
@@ -21,10 +34,12 @@ const appSlice = createSlice({
   initialState,
   reducers: {
     setUserId: (state, action: PayloadAction<string>) => {
+      storage.setUserId(action.payload);
       state.userId = action.payload;
     },
     removeUserId: (state) => {
       state.userId = null;
+      storage.removeUserId();
     },
     toggleTheme: (state) => {
       state.themeMode =
