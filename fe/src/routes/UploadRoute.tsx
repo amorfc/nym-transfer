@@ -1,11 +1,9 @@
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
 import NymFileUpload from "@/components/button/NymFileUpload";
 import NymText from "@/components/common/NymText";
-import NymUploadedFilePreview from "@/components/common/NymUploadedFilePreview";
-import { LoadingLottie } from "@/components/lotties/LoadingLottie";
+import NymUploadedFilePreview from "@/components/upload/NymUploadedFilePreview";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
-import { useNymFileLink } from "@/hooks/useNymFileLink";
 import { useUploadFileMutation } from "@/store/api/nymApi";
 import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
 import { Input, UploadFile } from "antd";
@@ -13,7 +11,8 @@ import TextArea from "antd/es/input/TextArea";
 import { useEffect, useState } from "react";
 import NymUploadAllButton from "@/components/button/NymUploadAllButton";
 import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
-import { FireWorksLottie } from "@/components/lotties/FireWorksLottie";
+import NymUploadCompleted from "@/components/upload/NymUploadCompleted";
+import NymUploadInProgress from "@/components/upload/NymUploadInProgress";
 
 const MAX_STORAGE_GB = 2;
 const GB_TO_BYTES = 1024 * 1024 * 1024;
@@ -28,7 +27,6 @@ const UploadRoute = () => {
   const { multipleFiles } = useFileUploadConfig();
   const { recipientAddress } = useSelectNymClient();
   const { isNymClientReady } = useNymClientStatus();
-  const { createNymDownloadLink } = useNymFileLink();
   const [title, setTitle] = useState("");
   const [uploadState, setUploadState] = useState<UploadState>(
     UploadState.INITIAL
@@ -38,9 +36,7 @@ const UploadRoute = () => {
   );
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
-
   const [uploadFile, { isLoading, isSuccess, data }] = useUploadFileMutation();
-
   const totalSize =
     selectedFiles?.reduce((acc, file) => acc + (file.size ?? 0), 0) ?? 0;
   const remainingBytes = MAX_STORAGE_GB * GB_TO_BYTES - totalSize;
@@ -123,30 +119,11 @@ const UploadRoute = () => {
   }, [isLoading]);
 
   if (uploadState === UploadState.IN_PROGRESS) {
-    return (
-      <TransitionWrapper>
-        <LoadingLottie />
-      </TransitionWrapper>
-    );
+    return <NymUploadInProgress />;
   }
 
   if (uploadState === UploadState.COMPLETED && data) {
-    return (
-      <TransitionWrapper>
-        <FireWorksLottie />
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {createNymDownloadLink(data)}
-        </div>
-      </TransitionWrapper>
-    );
+    return <NymUploadCompleted data={data} />;
   }
 
   return (
