@@ -5,7 +5,7 @@ import NymUploadedFilePreview from "@/components/upload/NymUploadedFilePreview";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import { useUploadFileMutation } from "@/store/api/nymApi";
-import { notifyError, notifySuccess } from "@/utils/GlobalNotification";
+import { notifyError, notifySuccess } from "@/components/toast/toast";
 import { Input, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useEffect, useState } from "react";
@@ -44,17 +44,17 @@ const UploadRoute = () => {
 
   const handleUploadAll = async () => {
     if (!recipientAddress) {
-      notifyError("Please enter a recipient address");
+      notifyError({ message: "Please enter a recipient address" });
       return;
     }
 
     if (!title.trim()) {
-      notifyError("Please enter a title");
+      notifyError({ message: "Please enter a title" });
       return;
     }
 
     if (selectedFiles.length === 0) {
-      notifyError("Please select at least one file");
+      notifyError({ message: "Please select at least one file" });
       return;
     }
 
@@ -76,14 +76,18 @@ const UploadRoute = () => {
         }).unwrap();
       }
 
-      notifySuccess(
-        `File${selectedFiles.length > 1 ? "s" : ""} uploaded successfully`
-      );
+      notifySuccess({
+        message: `File${
+          selectedFiles.length > 1 ? "s" : ""
+        } uploaded successfully`,
+      });
       setTitle("");
       setMessageText("");
       setSelectedFiles([]);
     } catch (error) {
-      notifyError(error instanceof Error ? error.message : "Upload failed");
+      notifyError({
+        message: error instanceof Error ? error.message : "Upload failed",
+      });
     } finally {
       setUploading(false);
     }
@@ -91,7 +95,7 @@ const UploadRoute = () => {
 
   const handleFileSelect = (file: UploadFile) => {
     if (file.size && file.size > remainingBytes) {
-      notifyError("Not enough storage space remaining");
+      notifyError({ message: "Not enough storage space remaining" });
       return;
     }
 

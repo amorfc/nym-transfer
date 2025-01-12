@@ -18,7 +18,7 @@ import {
   setSelfAddress,
 } from "@/store/slice/nymClientSlice";
 import { RootState } from "@/store/store";
-import { notifyWarning } from "@/utils/GlobalNotification";
+import { notifyWarning } from "@/components/toast/toast";
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const nymApi = createApi({
@@ -83,7 +83,7 @@ export const nymApi = createApi({
       async queryFn() {
         try {
           await NymClientManager.getInstance().stop();
-          notifyWarning("Nym client stopped/disconnected");
+          notifyWarning({ message: "Nym client stopped/disconnected" });
           return { data: undefined };
         } catch (error) {
           return { error };
