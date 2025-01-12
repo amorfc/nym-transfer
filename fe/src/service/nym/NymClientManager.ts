@@ -173,7 +173,6 @@ class NymClientManager {
         ) {
           const jsonContent = baseResponse.getContentAsJson();
           if (jsonContent && isPlainObject(jsonContent)) {
-            console.log("Success JSON Content:", jsonContent);
             this.requestManager.resolveRequest(
               baseResponse.requestId,
               baseResponse
