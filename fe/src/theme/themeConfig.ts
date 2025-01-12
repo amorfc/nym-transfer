@@ -5,6 +5,7 @@ import { selectThemeMode } from "@/store/slice/appSlice.ts";
 
 const getAntdTheme = (colors: ThemeColors): ThemeConfig => ({
   token: {
+    fontFamily: "Grotesque Mono, monospace",
     colorPrimary: colors.primary,
     colorSuccess: colors.success,
     colorWarning: colors.warning,
