@@ -16,6 +16,7 @@ import { UploadMixnetRequest } from "@/service/request/UploadMixnetRequest";
 import { BaseMixnetResponse } from "@/service/response/BaseMixnetResponse";
 import { DownloadMixnetResponse } from "@/service/response/DownloadMixnetResponse";
 import { UploadMixnetResponse } from "@/service/response/UploadMixnetResponse";
+import { Env } from "@/env";
 
 export type NymClientEventHandlers = {
   onConnected?: () => void;
@@ -70,10 +71,7 @@ class NymClientManager {
     // WebSocket implementation for development:
     this.stop();
     try {
-      const port = "1977";
-      const localClientUrl = "ws://127.0.0.1:" + port;
-
-      const ws = new WebSocket(localClientUrl);
+      const ws = new WebSocket(Env.NYM_ENTRY_CLIENT_WS_URL);
       this.ws = ws;
 
       if (eventHandlers) {
@@ -211,6 +209,8 @@ class NymClientManager {
     const int8Array = new Int8Array(selfAddressBytes);
     console.debug("Self address received.");
     this.selfAddress = Array.from(int8Array);
+    console.debug("Self address:", this.selfAddress);
+
     this.eventHandlers.onSelfAddress?.(this.selfAddress);
   }
 

@@ -16,7 +16,7 @@ const initialState: NymClientState = {
   isConnecting: false,
   selfAddress: null,
   receivedMessage: null,
-  recipientAddress: Env.NYM_CLIENT_ADDRESS_BYTE_ARR,
+  recipientAddress: Env.NYM_BACKEND_CLIENT_ADDRESS_BYTES,
 };
 
 const nymClientSlice = createSlice({
