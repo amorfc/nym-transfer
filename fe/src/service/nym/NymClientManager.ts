@@ -209,7 +209,6 @@ class NymClientManager {
     const int8Array = new Int8Array(selfAddressBytes);
     console.debug("Self address received.");
     this.selfAddress = Array.from(int8Array);
-    console.debug("Self address:", this.selfAddress);
 
     this.eventHandlers.onSelfAddress?.(this.selfAddress);
   }
