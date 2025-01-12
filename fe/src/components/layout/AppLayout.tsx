@@ -51,8 +51,7 @@ function AppLayout() {
               display: "flex",
               alignItems: "center",
               gap: "0.4rem",
-              paddingTop: "rem",
-              paddingLeft: "2rem",
+              padding: "2rem",
             }}
           >
             <NymLogoSvg />
