@@ -18,7 +18,7 @@ const NymCopyButton: React.FC<NymCopyButtonProps> = ({ textToCopy }) => {
       message.success("Link copied to clipboard!");
       setTimeout(() => setIsCopied(false), 1500);
     } catch (error) {
-      message.error(`Failed to copy link: ${error}`);
+      message.error(`Failed to copy link ${error}`);
     }
   };
 
