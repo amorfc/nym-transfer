@@ -30,16 +30,6 @@ const notify = (type: NotifyType, { message, ...options }: NotifyParams) => {
   toastMethod(message, {
     ...defaultConfig,
     ...options,
-    // progressStyle: {
-    //   background:
-    //     type === "success"
-    //       ? colors.success
-    //       : type === "error"
-    //       ? colors.error
-    //       : type === "warning"
-    //       ? colors.warning
-    //       : colors.primary,
-    // },
   });
 };
 

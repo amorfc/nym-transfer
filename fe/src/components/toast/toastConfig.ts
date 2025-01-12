@@ -10,6 +10,7 @@ export const getToastConfig = (colors: ThemeColors): ToastOptions => ({
   draggable: true,
   progress: undefined,
   theme: "dark",
+
   style: {
     background: colors.bgOverlay,
     border: `1px solid ${colors.borderPrimary}`,
