@@ -98,6 +98,17 @@ const UploadRoute = () => {
     setSelectedFiles((prev) => prev.filter((f) => f.uid !== file.uid));
   };
 
+  // Add effect to reset upload state when client disconnects during upload
+  useEffect(() => {
+    if (!isNymClientReady && uploadState === UploadState.IN_PROGRESS) {
+      setUploadState(UploadState.INITIAL);
+      setUploading(false);
+      notifyError({
+        message: "Upload cancelled: Connection to Nym network lost",
+      });
+    }
+  }, [isNymClientReady, uploadState]);
+
   useEffect(() => {
     if (isSuccess && data?.path) {
       setUploadState(UploadState.COMPLETED);
