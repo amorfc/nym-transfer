@@ -4,6 +4,7 @@ import { useThemeColors } from "@/hooks/useThemeColors.ts";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
 import { LoadingLottie } from "@/components/lotties/LoadingLottie";
+import { useResponsive } from "antd-style";
 
 interface NymCardProps extends CardProps {
   children: React.ReactNode;
@@ -11,10 +12,12 @@ interface NymCardProps extends CardProps {
 
 const NymCard: React.FC<NymCardProps> = ({ children, style, ...props }) => {
   const { isConnecting } = useSelectNymClient();
+  const { mobile } = useResponsive();
   const colors = useThemeColors();
 
   const defaultStyle = {
-    width: "400px",
+    minWidth: "340px",
+    width: mobile ? "100%" : "400px",
     minHeight: "480px",
     background: colors.bgOverlay,
     borderRadius: "16px",

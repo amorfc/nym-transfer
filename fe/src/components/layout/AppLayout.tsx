@@ -15,11 +15,14 @@ import NymLogoSvg from "@/components/svg/NymLogoSvg";
 import { ROUTES } from "@/routes/ROUTES";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import NymText from "@/components/common/NymText";
+import NymDisclaimer from "@/components/common/NymDisclaimer";
+import { useResponsive } from "antd-style";
 
 const { Content } = Layout;
 
 function AppLayout() {
   const theme = useTheme();
+  const { mobile } = useResponsive();
   const { goToUpload } = useAppNavigation();
   const dispatch = useAppDispatch();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -67,6 +70,14 @@ function AppLayout() {
             justifyContent: "center",
             flexDirection: "column",
             gap: "1rem",
+            padding: mobile ? "1rem" : "0rem",
+            // Mobile-specific styles
+            ...(mobile && {
+              height: "100vh",
+              overflow: "auto",
+              scrollBehavior: "smooth",
+              paddingBottom: "80px",
+            }),
           }}
         >
           <NymCard>
@@ -76,6 +87,15 @@ function AppLayout() {
               </NymFlexContainer>
             </TransitionWrapper>
           </NymCard>
+          <div style={{ width: "100%", maxWidth: "400px" }}>
+            <NymDisclaimer>
+              Multiple tabs are not allowed to use{" "}
+              <NymText color={colors.primary}>
+                Nym Transfer through the Nym Mixnet
+              </NymText>{" "}
+              due to stability issues.
+            </NymDisclaimer>
+          </div>
 
           <NymControlCenter />
         </Content>
