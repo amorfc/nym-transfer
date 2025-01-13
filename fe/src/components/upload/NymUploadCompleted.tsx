@@ -3,16 +3,18 @@ import { FireWorksLottie } from "@/components/lotties/FireWorksLottie";
 import NymUploadLink from "@/components/upload/NymUploadLink";
 import NymButton from "@/components/common/NymButton";
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
-import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import { UploadMixnetResponseData } from "@/service/response/UploadMixnetResponse";
 import { useNymFileLink } from "@/hooks/file/useNymFileLink";
 
 interface NymUploadCompletedProps {
   data: UploadMixnetResponseData;
+  onSendAnotherFile: () => void;
 }
 
-const NymUploadCompleted: React.FC<NymUploadCompletedProps> = ({ data }) => {
-  const { goToUpload } = useAppNavigation();
+const NymUploadCompleted: React.FC<NymUploadCompletedProps> = ({
+  data,
+  onSendAnotherFile,
+}) => {
   const { createNymDownloadLink } = useNymFileLink();
 
   return (
@@ -37,7 +39,7 @@ const NymUploadCompleted: React.FC<NymUploadCompletedProps> = ({ data }) => {
           }}
         >
           <NymUploadLink link={createNymDownloadLink(data)} />
-          <NymButton onClick={() => goToUpload()}>Send Another File</NymButton>
+          <NymButton onClick={onSendAnotherFile}>Send Another File</NymButton>
         </div>
       </div>
     </TransitionWrapper>

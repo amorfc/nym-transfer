@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { UploadFile } from "antd/es/upload/interface";
 
-export const MAX_TOTAL_SIZE_MB = 50; // 50MB total limit
+export const MAX_TOTAL_SIZE_MB = 2; // 2MB total limit
 
 export const useFileSizeManagement = (files: UploadFile[]) => {
   const totalSize = useMemo(

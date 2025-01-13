@@ -7,7 +7,7 @@ import { useUploadFileMutation } from "@/store/api/nymApi";
 import { notifyError, notifySuccess } from "@/components/toast/toast";
 import { Input, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import NymUploadAllButton from "@/components/button/NymUploadAllButton";
 import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
 import NymUploadCompleted from "@/components/upload/NymUploadCompleted";
@@ -110,12 +110,22 @@ const UploadRoute = () => {
     }
   }, [isLoading]);
 
+  const handleSendAnotherFile = useCallback(() => {
+    setUploadState(UploadState.INITIAL);
+    setSelectedFiles([]);
+  }, []);
+
   if (uploadState === UploadState.IN_PROGRESS) {
     return <NymUploadInProgress />;
   }
 
   if (uploadState === UploadState.COMPLETED && data) {
-    return <NymUploadCompleted data={data} />;
+    return (
+      <NymUploadCompleted
+        data={data}
+        onSendAnotherFile={handleSendAnotherFile}
+      />
+    );
   }
 
   return (
