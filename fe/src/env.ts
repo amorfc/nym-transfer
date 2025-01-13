@@ -30,6 +30,21 @@ function parseArrayStringToNumber(value: string): number[] {
   }
 }
 
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    // Browser should use relative path
+    return window.location.origin;
+  }
+
+  // Vercel deployment - use VERCEL_URL
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  // Default fallback
+  return "http://localhost:5173";
+};
+
 // Define the schema with a custom transformation
 const envSchema = z.object({
   VITE_NYM_ENTRY_CLIENT_WS_URL: z
@@ -44,7 +59,7 @@ const envSchema = z.object({
     .string()
     .url()
     .optional()
-    .transform(logDefaultUsage("VITE_DOMAIN_BASE_URL", "http://localhost:5173"))
+    .transform(logDefaultUsage("VITE_DOMAIN_BASE_URL", getBaseUrl()))
     .describe("Domain base URL"),
   NODE_ENV: z.enum(["development", "production", "test"]),
   NYM_BACKEND_CLIENT_ADDRESS_BYTES: z
