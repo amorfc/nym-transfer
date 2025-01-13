@@ -6,12 +6,16 @@ interface NymLinkProps {
   href: string;
   clickMessage?: string;
   children: React.ReactNode;
+  sameTab?: boolean;
+  style?: React.CSSProperties;
 }
 
 const NymLink: React.FC<NymLinkProps> = ({
   href,
   children,
   clickMessage = "Click to open link",
+  sameTab = true,
+  style,
 }) => {
   const colors = useThemeColors();
 
@@ -19,7 +23,7 @@ const NymLink: React.FC<NymLinkProps> = ({
     <Tooltip title={clickMessage}>
       <a
         href={href}
-        target="_blank"
+        target={sameTab ? "_self" : "_blank"}
         rel="noopener noreferrer"
         style={{
           flex: 1,
@@ -29,6 +33,7 @@ const NymLink: React.FC<NymLinkProps> = ({
           overflow: "hidden",
           textOverflow: "ellipsis",
           textDecoration: "none",
+          ...style,
         }}
       >
         {children}
