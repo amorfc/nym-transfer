@@ -181,7 +181,6 @@ class NymClientManager {
 
         // Handle as plain text
         if (isString(contentText)) {
-          console.log("Success Text Content:", contentText);
           this.requestManager.resolveRequest(
             baseResponse.requestId,
             baseResponse
