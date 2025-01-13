@@ -12,6 +12,7 @@ import { downloadFileToLocal } from "@/utils/fileUtils";
 import { Layout } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router";
+import { truncateMiddle } from "@/utils/stringUtils";
 
 const DownloadRoute = () => {
   const { fileId, name } = useParams();
@@ -126,7 +127,7 @@ const DownloadRoute = () => {
         >
           <NymText>
             <NymText color={colors.primary} weight="bold">
-              {name}
+              {truncateMiddle(name)}
             </NymText>{" "}
             Successfully Downloaded
           </NymText>
