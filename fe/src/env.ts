@@ -38,7 +38,10 @@ const getBaseUrl = () => {
 
   // Vercel deployment - use VERCEL_URL
   if (import.meta.env.VERCEL_URL) {
-    return `https://${import.meta.env.VERCEL_URL}`;
+    // Ensure URL has https protocol
+    return import.meta.env.VERCEL_URL.startsWith("http")
+      ? import.meta.env.VERCEL_URL
+      : `https://${import.meta.env.VERCEL_URL}`;
   }
 
   // Default fallback
@@ -57,9 +60,19 @@ const envSchema = z.object({
     .describe("Nym Entry Client WebSocket URL"),
   VITE_DOMAIN_BASE_URL: z
     .string()
-    .url()
     .optional()
-    .transform(logDefaultUsage("VITE_DOMAIN_BASE_URL", getBaseUrl()))
+    .transform((value) => {
+      const baseUrl = logDefaultUsage(
+        "VITE_DOMAIN_BASE_URL",
+        getBaseUrl()
+      )(value);
+      // Ensure URL has protocol
+      if (!baseUrl.startsWith("http")) {
+        return `https://${baseUrl}`;
+      }
+      return baseUrl;
+    })
+    .pipe(z.string().url())
     .describe("Domain base URL"),
   NODE_ENV: z.enum(["development", "production", "test"]),
   NYM_BACKEND_CLIENT_ADDRESS_BYTES: z
