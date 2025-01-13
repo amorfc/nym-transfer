@@ -5,7 +5,7 @@ import NymButton from "@/components/common/NymButton";
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
 import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import { UploadMixnetResponseData } from "@/service/response/UploadMixnetResponse";
-import { useNymFileLink } from "@/hooks/useNymFileLink";
+import { useNymFileLink } from "@/hooks/file/useNymFileLink";
 
 interface NymUploadCompletedProps {
   data: UploadMixnetResponseData;
@@ -28,6 +28,7 @@ const NymUploadCompleted: React.FC<NymUploadCompletedProps> = ({ data }) => {
         <div
           style={{
             flex: 1,
+            width: "100%",
             display: "flex",
             flexDirection: "column",
             marginTop: "auto",

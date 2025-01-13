@@ -1,6 +1,5 @@
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
 import NymFileUpload from "@/components/button/NymFileUpload";
-import NymText from "@/components/common/NymText";
 import NymUploadedFilePreview from "@/components/upload/NymUploadedFilePreview";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
@@ -13,9 +12,7 @@ import NymUploadAllButton from "@/components/button/NymUploadAllButton";
 import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
 import NymUploadCompleted from "@/components/upload/NymUploadCompleted";
 import NymUploadInProgress from "@/components/upload/NymUploadInProgress";
-
-const MAX_STORAGE_GB = 2;
-const GB_TO_BYTES = 1024 * 1024 * 1024;
+import NymFileSizeInfo from "@/components/upload/NymFileSizeInfo";
 
 enum UploadState {
   INITIAL, // Initial state where no input has been provided.
@@ -37,10 +34,6 @@ const UploadRoute = () => {
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadFile, { isLoading, isSuccess, data }] = useUploadFileMutation();
-  const totalSize =
-    selectedFiles?.reduce((acc, file) => acc + (file.size ?? 0), 0) ?? 0;
-  const remainingBytes = MAX_STORAGE_GB * GB_TO_BYTES - totalSize;
-  const remainingGB = remainingBytes / GB_TO_BYTES;
 
   const handleUploadAll = async () => {
     if (!recipientAddress) {
@@ -94,11 +87,6 @@ const UploadRoute = () => {
   };
 
   const handleFileSelect = (file: UploadFile) => {
-    if (file.size && file.size > remainingBytes) {
-      notifyError({ message: "Not enough storage space remaining" });
-      return;
-    }
-
     if (!multipleFiles) {
       setSelectedFiles([file]);
     } else {
@@ -143,17 +131,16 @@ const UploadRoute = () => {
           onFileSelect={handleFileSelect}
           disabled={!isNymClientReady}
           uploading={uploading}
+          selectedFiles={selectedFiles}
         />
+
+        <NymFileSizeInfo files={selectedFiles} />
 
         <NymUploadedFilePreview
           fileList={selectedFiles}
           onFileRemove={handleRemoveFile}
           listType="picture-card"
         />
-
-        <NymText size="small" style={{ marginTop: 8 }}>
-          {remainingGB.toFixed(1)} GB remaining
-        </NymText>
 
         <Input
           placeholder="Title"

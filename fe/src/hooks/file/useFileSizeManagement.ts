@@ -5,7 +5,7 @@ export const MAX_TOTAL_SIZE_MB = 50; // 50MB total limit
 
 export const useFileSizeManagement = (files: UploadFile[]) => {
   const totalSize = useMemo(
-    () => files.reduce((acc, file) => acc + (file.size ?? 0), 0),
+    () => files?.reduce((acc, file) => acc + (file.size ?? 0), 0) ?? 0,
     [files]
   );
 

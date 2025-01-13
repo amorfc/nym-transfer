@@ -5,22 +5,40 @@ import { InboxOutlined } from "@ant-design/icons";
 import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
 import NymText from "@/components/common/NymText";
 import { useThemeColors } from "@/hooks/useThemeColors";
+import {
+  MAX_TOTAL_SIZE_MB,
+  useFileSizeManagement,
+} from "@/hooks/file/useFileSizeManagement";
+import { notifyError } from "@/components/toast/toast";
 
 export interface NymFileUploadProps {
   onFileSelect: (file: UploadFile) => void;
   disabled?: boolean;
   uploading?: boolean;
+  selectedFiles: UploadFile[];
 }
 
 const NymFileUpload: React.FC<NymFileUploadProps> = ({
   onFileSelect,
   disabled = false,
   uploading = false,
+  selectedFiles,
 }) => {
   const { maxFileCount, multipleFiles } = useFileUploadConfig();
   const colors = useThemeColors();
+  const { isTotalSizeValid, formatFileSize, remainingSize } =
+    useFileSizeManagement(selectedFiles);
 
   const handleBeforeUpload = (file: File) => {
+    if (!isTotalSizeValid(file.size)) {
+      notifyError({
+        message: `Total size would exceed ${MAX_TOTAL_SIZE_MB}MB limit. Remaining space: ${formatFileSize(
+          remainingSize
+        )}`,
+      });
+      return false;
+    }
+
     const rcFile = file as RcFile;
     const uploadFile: UploadFile = {
       uid: Math.random().toString(),
@@ -31,7 +49,7 @@ const NymFileUpload: React.FC<NymFileUploadProps> = ({
       lastModified: file.lastModified,
     };
     onFileSelect(uploadFile);
-    return false; // Prevent default upload behavior
+    return false;
   };
 
   return (
