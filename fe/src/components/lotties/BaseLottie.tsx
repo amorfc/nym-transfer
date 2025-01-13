@@ -1,6 +1,6 @@
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
-import React, { useMemo } from "react";
-import Lottie from "react-lottie";
+import React from "react";
+import Lottie from "react-lottie-player";
 
 interface BaseLottieProps {
   animationData: object; // Lottie animation data
@@ -17,22 +17,17 @@ const BaseLottie: React.FC<BaseLottieProps> = ({
   loop = true,
   autoplay = true,
 }) => {
-  // Memoize options to avoid re-creation on each render
-  const defaultOptions = useMemo(
-    () => ({
-      loop,
-      autoplay,
-      animationData,
-      rendererSettings: {
-        preserveAspectRatio: "xMidYMid slice",
-      },
-    }),
-    [loop, autoplay, animationData]
-  );
-
   return (
     <TransitionWrapper>
-      <Lottie options={defaultOptions} height={height} width={width} />
+      <Lottie
+        animationData={animationData}
+        loop={loop}
+        play={autoplay}
+        style={{ height, width }}
+        rendererSettings={{
+          preserveAspectRatio: "xMidYMid slice",
+        }}
+      />
     </TransitionWrapper>
   );
 };

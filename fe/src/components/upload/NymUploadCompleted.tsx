@@ -17,19 +17,27 @@ const NymUploadCompleted: React.FC<NymUploadCompletedProps> = ({ data }) => {
 
   return (
     <TransitionWrapper>
-      <FireWorksLottie />
       <div
         style={{
-          flex: 1,
           display: "flex",
           flexDirection: "column",
-          marginTop: "auto",
           alignItems: "center",
-          gap: "1rem",
         }}
       >
-        <NymUploadLink link={createNymDownloadLink(data)} />
-        <NymButton onClick={() => goToUpload()}>Send Another File</NymButton>
+        <FireWorksLottie />
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            marginTop: "auto",
+            alignItems: "center",
+            gap: "1rem",
+          }}
+        >
+          <NymUploadLink link={createNymDownloadLink(data)} />
+          <NymButton onClick={() => goToUpload()}>Send Another File</NymButton>
+        </div>
       </div>
     </TransitionWrapper>
   );

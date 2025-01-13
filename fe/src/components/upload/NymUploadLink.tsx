@@ -21,10 +21,12 @@ const NymLinkContainer: React.FC<NymLinkContainerProps> = ({ link }) => {
         border: `1px solid ${colors.borderPrimary}`,
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
       }}
-      bodyStyle={{
-        padding: "6px 16px",
-        display: "flex",
-        alignItems: "center",
+      styles={{
+        body: {
+          padding: "6px 16px",
+          display: "flex",
+          alignItems: "center",
+        },
       }}
     >
       <NymLink href={link}>{link}</NymLink>

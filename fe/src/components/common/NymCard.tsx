@@ -26,9 +26,19 @@ const NymCard: React.FC<NymCardProps> = ({ children, style, ...props }) => {
   };
 
   return (
-    <Card style={defaultStyle} bodyStyle={{ padding: "1rem" }} {...props}>
+    <Card
+      style={defaultStyle}
+      styles={{
+        body: {
+          padding: "1rem",
+        },
+      }}
+      {...props}
+    >
       {isConnecting ? (
-        <LoadingLottie />
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <LoadingLottie />
+        </div>
       ) : (
         <TransitionWrapper>{children}</TransitionWrapper>
       )}
