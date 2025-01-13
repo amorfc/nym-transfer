@@ -30,24 +30,6 @@ function parseArrayStringToNumber(value: string): number[] {
   }
 }
 
-const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    // Browser should use relative path
-    return window.location.origin;
-  }
-
-  // Vercel deployment - use VERCEL_URL
-  if (import.meta.env.VERCEL_URL) {
-    // Ensure URL has https protocol
-    return import.meta.env.VERCEL_URL.startsWith("http")
-      ? import.meta.env.VERCEL_URL
-      : `https://${import.meta.env.VERCEL_URL}`;
-  }
-
-  // Default fallback
-  return "http://localhost:5173";
-};
-
 // Define the schema with a custom transformation
 const envSchema = z.object({
   VITE_NYM_ENTRY_CLIENT_WS_URL: z
@@ -58,22 +40,6 @@ const envSchema = z.object({
       logDefaultUsage("VITE_NYM_ENTRY_CLIENT_WS_URL", "ws://127.0.0.1:1977")
     )
     .describe("Nym Entry Client WebSocket URL"),
-  VITE_DOMAIN_BASE_URL: z
-    .string()
-    .optional()
-    .transform((value) => {
-      const baseUrl = logDefaultUsage(
-        "VITE_DOMAIN_BASE_URL",
-        getBaseUrl()
-      )(value);
-      // Ensure URL has protocol
-      if (!baseUrl.startsWith("http")) {
-        return `https://${baseUrl}`;
-      }
-      return baseUrl;
-    })
-    .pipe(z.string().url())
-    .describe("Domain base URL"),
   NODE_ENV: z.enum(["development", "production", "test"]),
   NYM_BACKEND_CLIENT_ADDRESS_BYTES: z
     .string()
@@ -91,7 +57,6 @@ const envSchema = z.object({
 
 // Parse and validate the environment variables
 const parsedEnv = envSchema.parse({
-  VITE_DOMAIN_BASE_URL: import.meta.env.VITE_DOMAIN_BASE_URL,
   VITE_NYM_ENTRY_CLIENT_WS_URL: import.meta.env.VITE_NYM_ENTRY_CLIENT_WS_URL,
   NODE_ENV: import.meta.env.MODE,
   NYM_BACKEND_CLIENT_ADDRESS_BYTES: import.meta.env
@@ -100,7 +65,6 @@ const parsedEnv = envSchema.parse({
 
 // Expose validated and parsed environment variables
 export const Env = {
-  DOMAIN_BASE_URL: parsedEnv.VITE_DOMAIN_BASE_URL,
   NYM_ENTRY_CLIENT_WS_URL: parsedEnv.VITE_NYM_ENTRY_CLIENT_WS_URL,
   NYM_BACKEND_CLIENT_ADDRESS_BYTES: parseArrayStringToNumber(
     import.meta.env.VITE_NYM_BACKEND_CLIENT_ADDRESS_BYTES
