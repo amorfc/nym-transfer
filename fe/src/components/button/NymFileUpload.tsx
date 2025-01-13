@@ -3,6 +3,8 @@ import { Upload } from "antd";
 import { RcFile, UploadFile } from "antd/es/upload/interface";
 import { InboxOutlined } from "@ant-design/icons";
 import { useFileUploadConfig } from "@/hooks/store/useFileUploadConfig";
+import NymText from "@/components/common/NymText";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
 export interface NymFileUploadProps {
   onFileSelect: (file: UploadFile) => void;
@@ -16,6 +18,7 @@ const NymFileUpload: React.FC<NymFileUploadProps> = ({
   uploading = false,
 }) => {
   const { maxFileCount, multipleFiles } = useFileUploadConfig();
+  const colors = useThemeColors();
 
   const handleBeforeUpload = (file: File) => {
     const rcFile = file as RcFile;
@@ -49,7 +52,10 @@ const NymFileUpload: React.FC<NymFileUploadProps> = ({
         } to this area to upload`}
       </p>
       <p className="ant-upload-hint">
-        {`NYM Transfer supports single or multiple uploads.`}
+        <NymText color={colors.success}>NYM Transfer</NymText>
+        {multipleFiles
+          ? " supports multiple file uploads."
+          : " supports single file upload for now."}
       </p>
     </Upload.Dragger>
   );
