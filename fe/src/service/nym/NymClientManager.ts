@@ -49,28 +49,21 @@ class NymClientManager {
   }
 
   public async init(eventHandlers?: NymClientEventHandlers) {
-    // Check if already connected
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      console.debug("WebSocket already connected");
-      return true;
-    }
-
-    // Check if connection is in progress
-    if (this.isConnecting) {
-      console.debug("Connection already in progress");
-      return false;
-    }
-
-    // Clean up any existing connection
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
-
-    this.isConnecting = true;
-    // WebSocket implementation for development:
-    this.stop();
     try {
+      // Check if already connected
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        console.debug("WebSocket already connected");
+        return true;
+      }
+
+      // Clean up any existing connection
+      if (this.ws) {
+        this.ws.close();
+        this.ws = null;
+      }
+
+      this.isConnecting = true;
+
       const ws = new WebSocket(Env.NYM_ENTRY_CLIENT_WS_URL);
       this.ws = ws;
 
@@ -78,31 +71,33 @@ class NymClientManager {
         this.eventHandlers = eventHandlers;
       }
 
-      ws.onopen = () => {
-        console.debug("WebSocket Connected");
-        this.eventHandlers.onConnected?.();
-        this.isConnecting = false;
+      return new Promise((resolve, reject) => {
+        ws.onopen = () => {
+          console.debug("WebSocket Connected");
+          this.eventHandlers.onConnected?.();
+          this.isConnecting = false;
 
-        // Send self address request (0x03) as binary data
-        const selfAddressRequest = new Uint8Array([0x03]);
-        this.ws?.send(selfAddressRequest);
-        Promise.resolve(true);
-      };
+          // Send self address request
+          const selfAddressRequest = new Uint8Array([0x03]);
+          this.ws?.send(selfAddressRequest);
+          resolve(true);
+        };
 
-      ws.onerror = (err) => {
-        this.isConnecting = false;
-        const errorMessage = "WebSocket connection failed";
-        console.error(errorMessage, err);
-        Promise.reject(new Error(errorMessage));
-      };
+        ws.onerror = (err) => {
+          this.isConnecting = false;
+          const errorMessage = "WebSocket connection failed";
+          console.error(errorMessage, err);
+          reject(new Error(errorMessage));
+        };
 
-      ws.onclose = () => {
-        console.debug("WebSocket Closed");
-        this.eventHandlers.onDisconnected?.();
-        this.isConnecting = false;
-      };
+        ws.onclose = () => {
+          console.debug("WebSocket Closed");
+          this.isConnecting = false;
+          this.eventHandlers.onDisconnected?.();
+        };
 
-      ws.onmessage = this.handleMessage.bind(this);
+        ws.onmessage = this.handleMessage.bind(this);
+      });
     } catch (error) {
       this.isConnecting = false;
       throw error;

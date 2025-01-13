@@ -1,4 +1,3 @@
-// src/slices/nymApiSlice.ts
 import NymClientManager from "@/service/nym/NymClientManager";
 import {
   DownloadMixnetRequest,
@@ -29,53 +28,33 @@ export const nymApi = createApi({
       async queryFn(_, { dispatch }) {
         try {
           const nymClientManager = NymClientManager.getInstance();
+          console.debug("Nym Mixnet Connection initializing...");
+
           await nymClientManager.init({
             onConnected: () => {
               dispatch(setIsConnected(true));
               dispatch(setIsConnecting(false));
             },
-            onSelfAddress: (address) => dispatch(setSelfAddress(address)),
+            onSelfAddress: (address) => {
+              dispatch(setSelfAddress(address));
+              dispatch(setIsConnecting(false));
+            },
             onDisconnected: () => {
               dispatch(setIsConnected(false));
               dispatch(setIsConnecting(false));
-              // If disconnected, try to reconnect after 10 seconds
-              setTimeout(() => {
-                nymApi.endpoints.keepAliveNymClient.initiate(undefined, {
-                  track: false,
-                  fixedCacheKey: "keepAlive",
-                });
-              }, 10000);
             },
           });
           return { data: undefined };
         } catch (error) {
-          console.error("Connection failed:", error);
-          // If connection fails, try again after 10 seconds
-          setTimeout(() => {
-            nymApi.endpoints.keepAliveNymClient.initiate(undefined, {
-              track: false,
-              fixedCacheKey: "keepAlive",
-            });
-          }, 10000);
-          return { error };
-        }
-      },
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        try {
-          // Set `isConnecting` true when query starts
-          dispatch(setIsConnecting(true));
-
-          await queryFulfilled;
-
-          // If successful, set `isConnected` true
-          dispatch(setIsConnected(true));
           dispatch(setIsConnecting(false));
-        } catch {
-          // On failure, reset both flags
           dispatch(setIsConnected(false));
-          dispatch(setIsConnecting(false));
-        } finally {
-          dispatch(setIsConnecting(false));
+          // Serialize the error before returning it to Redux
+          return {
+            error: {
+              message: error instanceof Error ? error.message : "Unknown error",
+              name: error instanceof Error ? error.name : "Error",
+            },
+          };
         }
       },
     }),
