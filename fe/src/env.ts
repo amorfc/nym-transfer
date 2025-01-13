@@ -37,8 +37,8 @@ const getBaseUrl = () => {
   }
 
   // Vercel deployment - use VERCEL_URL
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+  if (import.meta.env.VERCEL_URL) {
+    return `https://${import.meta.env.VERCEL_URL}`;
   }
 
   // Default fallback
