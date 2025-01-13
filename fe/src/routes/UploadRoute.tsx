@@ -70,7 +70,7 @@ const UploadRoute = () => {
 
         await uploadFile({
           payload: {
-            title: multipleFiles ? `${title} - ${file.name}` : title,
+            title: multipleFiles ? `${title} - ${file.name}` : file.name,
             content,
           },
         }).unwrap();

@@ -5,6 +5,7 @@ import { FireWorksLottie } from "@/components/lotties/FireWorksLottie";
 import { LoadingLottie } from "@/components/lotties/LoadingLottie";
 import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import { ROUTES } from "@/routes/ROUTES";
 import { useDownloadFileMutation } from "@/store/api/nymApi";
 import { downloadFileToLocal } from "@/utils/fileUtils";
@@ -15,6 +16,7 @@ import { Navigate, useParams } from "react-router";
 const DownloadRoute = () => {
   const { fileId, name } = useParams();
   const [downloadFile, { isLoading }] = useDownloadFileMutation();
+  const colors = useThemeColors();
   const { isNymClientReady } = useNymClientStatus();
   const { goToUpload } = useAppNavigation();
   const [isDownloaded, setIsDownloaded] = useState(false);
@@ -122,7 +124,12 @@ const DownloadRoute = () => {
             gap: "1rem",
           }}
         >
-          <NymText>{name} Successfully Downloaded</NymText>
+          <NymText>
+            <NymText color={colors.primary} weight="bold">
+              {name}
+            </NymText>{" "}
+            Successfully Downloaded
+          </NymText>
           <NymButton onClick={() => goToUpload()}>Send New File</NymButton>
         </div>
       </Layout>
