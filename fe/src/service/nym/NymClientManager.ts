@@ -312,7 +312,7 @@ class NymClientManager {
     const requestId: string = request.getRequestId();
 
     // Decide on a timeout for receiving a response
-    const REQUEST_TIMEOUT_MS = 20000;
+    const REQUEST_TIMEOUT_MS = 2000000;
 
     // Create a Promise that will be resolved or rejected when we hear back
     const pendingPromise = this.requestManager.createRequest(
