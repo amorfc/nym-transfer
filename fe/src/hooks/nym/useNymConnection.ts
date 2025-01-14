@@ -7,7 +7,7 @@ import { useSelectNymClient } from "../store/useSelectNymClient";
 export const useNymConnection = () => {
   const dispatch = useAppDispatch();
   const retryCount = useRef(0);
-  const retryTimeout = useRef<NodeJS.Timeout>(undefined);
+  const retryTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [keepAliveNymClient] = useKeepAliveNymClientMutation();
   const { isConnected } = useSelectNymClient();
 
