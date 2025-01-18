@@ -28,7 +28,6 @@ export type NymClientEventHandlers = {
 class NymClientManager {
   private static instance: NymClientManager;
   private ws: WebSocket | null = null;
-  private isConnecting: boolean = false;
   private selfAddress: number[] | null = null;
   // Manages pending requests
   readonly requestManager: RequestManager;
@@ -49,59 +48,49 @@ class NymClientManager {
   }
 
   public async init(eventHandlers?: NymClientEventHandlers) {
-    try {
-      // Check if already connected
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        console.debug("WebSocket already connected");
-        return true;
-      }
-
-      // Clean up any existing connection
-      if (this.ws) {
-        this.ws.close();
-        this.ws = null;
-      }
-
-      this.isConnecting = true;
-
-      const ws = new WebSocket(Env.NYM_ENTRY_CLIENT_WS_URL);
-      this.ws = ws;
-
-      if (eventHandlers) {
-        this.eventHandlers = eventHandlers;
-      }
-
-      return new Promise((resolve, reject) => {
-        ws.onopen = () => {
-          console.debug("WebSocket Connected");
-          this.eventHandlers.onConnected?.();
-          this.isConnecting = false;
-
-          // Send self address request
-          const selfAddressRequest = new Uint8Array([0x03]);
-          this.ws?.send(selfAddressRequest);
-          resolve(true);
-        };
-
-        ws.onerror = (err) => {
-          this.isConnecting = false;
-          const errorMessage = "WebSocket connection failed";
-          console.error(errorMessage, err);
-          reject(new Error(errorMessage));
-        };
-
-        ws.onclose = () => {
-          console.debug("WebSocket Closed");
-          this.isConnecting = false;
-          this.eventHandlers.onDisconnected?.();
-        };
-
-        ws.onmessage = this.handleMessage.bind(this);
-      });
-    } catch (error) {
-      this.isConnecting = false;
-      throw error;
+    // Check if already connected
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      console.debug("WebSocket already connected");
+      return true;
     }
+
+    // Clean up any existing connection
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+
+    const ws = new WebSocket(Env.NYM_ENTRY_CLIENT_WS_URL);
+    this.ws = ws;
+
+    if (eventHandlers) {
+      this.eventHandlers = eventHandlers;
+    }
+
+    return new Promise((resolve, reject) => {
+      ws.onopen = () => {
+        console.debug("WebSocket Connected");
+        this.eventHandlers.onConnected?.();
+
+        // Send self address request
+        const selfAddressRequest = new Uint8Array([0x03]);
+        this.ws?.send(selfAddressRequest);
+        resolve(true);
+      };
+
+      ws.onerror = (err) => {
+        const errorMessage = "WebSocket connection failed";
+        console.error(errorMessage, err);
+        reject(new Error(errorMessage));
+      };
+
+      ws.onclose = () => {
+        console.debug("WebSocket Closed");
+        this.eventHandlers.onDisconnected?.();
+      };
+
+      ws.onmessage = this.handleMessage.bind(this);
+    });
   }
   private handleMessage(event: MessageEvent) {
     const blob = event.data as Blob;
