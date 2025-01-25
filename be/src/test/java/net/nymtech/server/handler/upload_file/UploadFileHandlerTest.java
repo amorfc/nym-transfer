@@ -76,7 +76,6 @@ final class UploadFileHandlerTest {
     assertThat(actual).isEqualTo(Response.unexpectedFailure());
   }
 
-
   private static Stream<Arguments> argumentsForInvalidRequestContent()
       throws JsonProcessingException {
     return Stream.of(Arguments.of(objectMapper.writeValueAsBytes(objectMapper.createObjectNode())),
@@ -96,7 +95,7 @@ final class UploadFileHandlerTest {
       try {
         requestContent = objectMapper.writeValueAsBytes(
             new UploadFileRequest(UUID.fromString("27aefbf2-9afa-4c24-a60d-564fbf8d0916"),
-                "test-title", "Hello World!".getBytes()));
+                "test-title", "The file I wanted to share with you!", "Hello World!".getBytes()));
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

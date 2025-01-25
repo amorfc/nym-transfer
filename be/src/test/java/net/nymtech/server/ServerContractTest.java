@@ -14,13 +14,12 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.nymtech.server.request.Request;
 import net.nymtech.server.response.Response;
 
-@Disabled("These tests fail when NYM Client is not running locally, this will be fixed!")
+// @Disabled("These tests fail when NYM Client is not running locally, this will be fixed!")
 final class ServerContractTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -114,6 +113,7 @@ final class ServerContractTest {
     var content = objectMapper.createObjectNode();
     content.put("userId", "27aefbf2-9afa-4c24-a60d-564fbf8d0916");
     content.put("title", "test-title");
+    content.put("message", "The file I wanted to share with you!");
     content.put("content", testFile());
     var request = new Request(UUID.fromString("6f0bb35c-b473-4a12-ab5e-5a5efc7e85ff"),
         Request.Type.UPLOAD_FILE, selfAddress, objectMapper.writeValueAsBytes(content));
