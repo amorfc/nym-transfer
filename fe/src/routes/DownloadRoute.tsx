@@ -7,7 +7,10 @@ import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import { ROUTES } from "@/routes/ROUTES";
-import { useDownloadFileMutation } from "@/store/api/nymApi";
+import {
+  useDownloadFileMutation,
+  useGetFileInfoQuery,
+} from "@/store/api/nymApi";
 import { downloadFileToLocal } from "@/utils/fileUtils";
 import { Layout } from "antd";
 import { useCallback, useEffect, useState } from "react";
@@ -16,15 +19,25 @@ import { truncateMiddle } from "@/utils/stringUtils";
 
 const DownloadRoute = () => {
   const { fileId, name } = useParams();
-  const [downloadFile, { isLoading }] = useDownloadFileMutation();
-  const colors = useThemeColors();
+  const [downloadFile] = useDownloadFileMutation();
   const { isNymClientReady } = useNymClientStatus();
+  const { data: fileInfo, isLoading: isLoadingInfo } = useGetFileInfoQuery(
+    {
+      payload: { path: `${fileId}/${name}` },
+    },
+    {
+      skip: !fileId || !name || !isNymClientReady,
+    }
+  );
+  const colors = useThemeColors();
   const { goToUpload } = useAppNavigation();
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = useCallback(async () => {
     try {
+      setIsDownloading(true);
       const { content } = await downloadFile({
         payload: {
           path: `${fileId}/${name}`,
@@ -38,6 +51,8 @@ const DownloadRoute = () => {
     } catch (err) {
       setError("Failed to download file. Please try again.");
       console.error("Download error:", err);
+    } finally {
+      setIsDownloading(false);
     }
   }, [downloadFile, fileId, name]);
 
@@ -53,8 +68,8 @@ const DownloadRoute = () => {
     return <Navigate to={ROUTES.UPLOAD} replace />;
   }
 
-  // Show loading state while connecting to WebSocket
-  if (!isNymClientReady) {
+  // Show loading state while fetching file info
+  if (isLoadingInfo) {
     return (
       <Layout style={{ background: "transparent" }}>
         <NymFlexContainer
@@ -65,7 +80,32 @@ const DownloadRoute = () => {
           }}
         >
           <LoadingLottie />
-          <NymText>Connecting to Nym network...</NymText>
+          <NymText>Fetching file information...</NymText>
+        </NymFlexContainer>
+      </Layout>
+    );
+  }
+
+  // Show file info and download button
+  if (fileInfo && !isDownloaded && !isDownloading) {
+    return (
+      <Layout style={{ background: "transparent" }}>
+        <NymFlexContainer
+          style={{
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "1rem",
+          }}
+        >
+          <div>
+            <NymText>Title: {fileInfo.title}</NymText>
+            <NymText>Size: {fileInfo.size_human}</NymText>
+            <NymText>Uploaded: {fileInfo.uploadTimestamp}</NymText>
+            {fileInfo.message && <NymText>Message: {fileInfo.message}</NymText>}
+          </div>
+          <NymButton onClick={handleDownload}>Download File</NymButton>
+          <NymButton onClick={() => goToUpload()}>Go Back</NymButton>
         </NymFlexContainer>
       </Layout>
     );
@@ -92,7 +132,7 @@ const DownloadRoute = () => {
   }
 
   // Show loading state while downloading
-  if (isLoading) {
+  if (isDownloading) {
     return (
       <Layout style={{ background: "transparent" }}>
         <NymFlexContainer

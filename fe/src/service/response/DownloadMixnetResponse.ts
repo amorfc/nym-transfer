@@ -9,6 +9,8 @@ export interface DownloadMixnetResponseData {
 }
 
 export class DownloadMixnetResponse extends BaseMixnetResponse {
+  private downloadContent?: number[];
+
   constructor(
     requestId: string,
     status: MixnetResponseStatus,
@@ -16,11 +18,18 @@ export class DownloadMixnetResponse extends BaseMixnetResponse {
     rawBytes?: number[]
   ) {
     super(requestId, status, content, rawBytes);
+    try {
+      this.downloadContent = this.content;
+    } catch (error) {
+      console.error("Error parsing download content:", error);
+      // Set status to unsuccessful since we couldn't parse the response
+      this.status = MixnetResponseStatus.UNSUCCESSFUL;
+    }
   }
 
   public asResponseData(): DownloadMixnetResponseData {
     return {
-      content: this.content,
+      content: this.downloadContent ?? [],
       status: this.status,
     };
   }

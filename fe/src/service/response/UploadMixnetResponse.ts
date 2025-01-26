@@ -9,7 +9,7 @@ export interface UploadMixnetResponseData {
 }
 
 export class UploadMixnetResponse extends BaseMixnetResponse {
-  public path?: string;
+  private uploadInfo?: { path: string };
 
   constructor(
     requestId: string,
@@ -18,18 +18,18 @@ export class UploadMixnetResponse extends BaseMixnetResponse {
     rawBytes?: number[]
   ) {
     super(requestId, status, content, rawBytes);
-    // If we want to parse `content` as JSON for the `path` field:
-    if (this.isSuccess()) {
-      const jsonData = this.getContentAsJson();
-      if (jsonData && typeof jsonData.path === "string") {
-        this.path = jsonData.path;
-      }
+    try {
+      this.uploadInfo = this.getContentAsJson<{ path: string }>();
+    } catch (error) {
+      console.error("Error parsing upload info:", error);
+      // Set status to unsuccessful since we couldn't parse the response
+      this.status = MixnetResponseStatus.UNSUCCESSFUL;
     }
   }
 
   public asResponseData(): UploadMixnetResponseData {
     return {
-      path: this.path ?? "",
+      path: this.uploadInfo?.path ?? "",
       status: this.status,
     };
   }

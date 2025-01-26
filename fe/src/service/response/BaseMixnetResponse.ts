@@ -15,7 +15,7 @@ export interface IResponseWithAsData<T> {
 
 export class BaseMixnetResponse {
   public readonly requestId: string;
-  public readonly status: MixnetResponseStatus;
+  public status: MixnetResponseStatus;
   public readonly content: number[];
   public readonly rawBytes?: number[];
 
@@ -46,14 +46,27 @@ export class BaseMixnetResponse {
   }
 
   /**
-   * Attempt to parse `content` as JSON. Returns `null` if parsing fails.
+   * Attempt to parse `content` as JSON.
+   * @throws {Error} If parsing fails or content is invalid
    */
-  public getContentAsJson(): Record<string, unknown> | null {
+  public getContentAsJson<T>(): T {
     try {
-      return JSON.parse(this.getContentAsText());
-    } catch (e) {
-      console.error("Failed to parse JSON:", e);
-      return null;
+      const contentText = this.getContentAsText();
+      if (!contentText) {
+        throw new Error("Empty content received");
+      }
+
+      const parsed = JSON.parse(contentText);
+      if (!parsed) {
+        throw new Error("Parsed content is null or undefined");
+      }
+
+      return parsed as T;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to parse JSON content: ${error.message}`);
+      }
+      throw new Error("Failed to parse JSON content: Unknown error");
     }
   }
 
