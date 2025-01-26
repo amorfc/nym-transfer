@@ -19,6 +19,11 @@ import {
 import { RootState } from "@/store/store";
 import { notifyWarning } from "@/components/toast/toast";
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
+import { FileInfoResponseData } from "@/service/response/FileInfoMixnetResponse";
+import {
+  FileInfoPayload,
+  FileInfoMixnetRequest,
+} from "@/service/request/FileInfoMixnetRequest";
 
 export const nymApi = createApi({
   reducerPath: "nymApi",
@@ -131,6 +136,35 @@ export const nymApi = createApi({
         }
       },
     }),
+    getFileInfo: builder.query<
+      FileInfoResponseData,
+      { payload: Omit<FileInfoPayload, "userId"> }
+    >({
+      async queryFn({ payload }, { getState }) {
+        try {
+          const { recipientAddress, selfAddress, userId } = validateClientState(
+            getState as () => RootState
+          );
+
+          const requestPayload = {
+            userId,
+            path: payload.path,
+          };
+
+          const request = new FileInfoMixnetRequest(
+            recipientAddress,
+            selfAddress,
+            requestPayload
+          );
+
+          const response =
+            await NymClientManager.getInstance().sendFileInfoRequest(request);
+          return { data: response.asResponseData() };
+        } catch (error) {
+          return { error };
+        }
+      },
+    }),
   }),
 });
 
@@ -139,6 +173,7 @@ export const {
   useStopClientMutation,
   useUploadFileMutation,
   useDownloadFileMutation,
+  useGetFileInfoQuery,
 } = nymApi;
 
 function validateClientState(getState: () => RootState) {
@@ -155,3 +190,14 @@ function validateClientState(getState: () => RootState) {
 
   return { recipientAddress, selfAddress, userId };
 }
+
+// const a = [
+//   86, 22, -114, -2, 97, 107, 83, 42, -100, -111, -106, -123, 112, -75, 71, -80,
+//   -96, 9, -35, 18, -42, -117, -11, 68, -75, -96, 76, -109, 76, 75, 57, -127,
+//   -65, -79, 48, 108, -29, -86, -80, 89, -11, 30, -109, 127, -120, 4, 60, 102,
+//   58, -67, 65, -28, 100, 70, -70, -98, -116, 122, -34, -70, -85, -120, -60, 108,
+//   95, -63, 14, 76, 16, -94, -112, 83, -53, -126, 95, 119, -102, -118, 93, 85,
+//   106, -5, 89, -122, -97, -6, 22, -106, -110, -89, -73, 24, -6, -60, 68, 123,
+// ];
+
+// console.log(a.map((x) => x.toString()).join(","));
