@@ -1,5 +1,6 @@
 export const ROUTES = {
   UPLOAD: "/upload",
+  UPLOAD_TEST: "/upload-test",
   DOWNLOAD: "/download/:fileId/:name",
   BASE: "/",
   NOT_FOUND: "*", // Wildcard route for unknown paths
