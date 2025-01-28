@@ -1,8 +1,12 @@
 package net.nymtech.server.handler.upload_file;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import java.io.IOException;
 import java.util.UUID;
@@ -13,10 +17,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.nymtech.server.response.Response;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,19 +31,21 @@ final class UploadFileHandlerTest {
 
   @Mock
   private FileUploader uploader;
+  @Mock
+  private FileMetadataRepository repository;
 
   private UploadFileHandler underTest;
 
   @BeforeEach
   void setUp() {
-    underTest = new UploadFileHandler(objectMapper, "/base-path", uploader);
+    underTest = new UploadFileHandler(objectMapper, "/base-path", uploader, repository);
   }
 
   @Test
   void should_Handle_Upload_File_Request() throws IOException {
     // given
-    doNothing().when(uploader).upload("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title",
-        "Hello World!".getBytes());
+    doNothing().when(uploader).upload(anyString(), any());
+    doNothing().when(repository).insert(any());
 
     // when
     var actual = underTest.handle(TestData.requestId, TestData.requestContent);
@@ -48,6 +55,21 @@ final class UploadFileHandlerTest {
         new UploadFileResponse("/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
     assertThat(actual)
         .isEqualTo(Response.success(objectMapper.writeValueAsBytes(expectedResponseContent)));
+
+    verify(uploader, times(1)).upload("/base-path" + expectedResponseContent.path(),
+        TestData.content);
+
+    var argumentCaptorFileMetadata = ArgumentCaptor.forClass(FileMetadata.class);
+    verify(repository, times(1)).insert(argumentCaptorFileMetadata.capture());
+    var insertedMetadata = argumentCaptorFileMetadata.getValue();
+    assertThat(insertedMetadata.id()).isNotNull();
+    assertThat(insertedMetadata.userId()).isEqualTo(TestData.userId);
+    assertThat(insertedMetadata.title()).isEqualTo(TestData.title);
+    assertThat(insertedMetadata.message()).isEqualTo(TestData.message);
+    assertThat(insertedMetadata.path())
+        .isEqualTo("/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
+    assertThat(insertedMetadata.uploadTimestamp())
+        .isGreaterThan(System.currentTimeMillis() - 5_000);
   }
 
   @ParameterizedTest
@@ -60,7 +82,7 @@ final class UploadFileHandlerTest {
 
     // then
     assertThat(actual).isEqualTo(Response.unexpectedFailure());
-    verifyNoInteractions(uploader);
+    verifyNoInteractions(uploader, repository);
   }
 
   @Test
@@ -74,28 +96,33 @@ final class UploadFileHandlerTest {
 
     // then
     assertThat(actual).isEqualTo(Response.unexpectedFailure());
+    verifyNoInteractions(repository);
   }
 
-  private static Stream<Arguments> argumentsForInvalidRequestContent()
-      throws JsonProcessingException {
-    return Stream.of(Arguments.of(objectMapper.writeValueAsBytes(objectMapper.createObjectNode())),
-        Arguments.of(objectMapper.writeValueAsBytes(
-            objectMapper.createObjectNode().put("userId", "27aefbf2-9afa-4c24-a60d-564fbf8d0916"))),
-        Arguments.of(objectMapper
-            .writeValueAsBytes(objectMapper.createObjectNode().put("title", "test-title"))),
-        Arguments.of(objectMapper.writeValueAsBytes(
-            objectMapper.createObjectNode().put("content", "Hello World!".getBytes()))));
+  private static Stream<Arguments> argumentsForInvalidRequestContent() throws IOException {
+    var validRequestContent = (ObjectNode) objectMapper.readTree(TestData.requestContent);
+    return Stream.of(
+        Arguments
+            .of(objectMapper.writeValueAsBytes(validRequestContent.deepCopy().remove("userId"))),
+        Arguments
+            .of(objectMapper.writeValueAsBytes(validRequestContent.deepCopy().remove("title"))),
+        Arguments
+            .of(objectMapper.writeValueAsBytes(validRequestContent.deepCopy().remove("content"))),
+        Arguments.of(objectMapper.writeValueAsBytes(objectMapper.createObjectNode())));
   }
 
   private static class TestData {
 
     private static final UUID requestId = UUID.fromString("4b1363d1-241b-4e7a-9c0c-adb46d4507c2");
+    private static final UUID userId = UUID.fromString("27aefbf2-9afa-4c24-a60d-564fbf8d0916");
+    private static final String title = "test-title";
+    private static final String message = "The file I wanted to share with you!";
+    private static final byte[] content = "Hello World!".getBytes();
     private static byte[] requestContent;
     static {
       try {
-        requestContent = objectMapper.writeValueAsBytes(
-            new UploadFileRequest(UUID.fromString("27aefbf2-9afa-4c24-a60d-564fbf8d0916"),
-                "test-title", "The file I wanted to share with you!", "Hello World!".getBytes()));
+        requestContent =
+            objectMapper.writeValueAsBytes(new UploadFileRequest(userId, title, message, content));
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
