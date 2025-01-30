@@ -8,7 +8,9 @@
       "mainClass": "net.nymtech.Main",
       "projectName": "nym-transfer",
       "args": [],
-      "env": {}
+      "env": {
+        "SECRET_KEY": "rTOmQvggpK82rp/+ITa8VsdeLzrVlvNHwlmSJSmSOJg="
+      }
     }
   ]
 }
