@@ -1,4 +1,4 @@
-package net.nymtech.server.utils;
+package net.nymtech.server.handler.upload_file;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Nested;

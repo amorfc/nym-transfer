@@ -14,12 +14,13 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.nymtech.server.request.Request;
 import net.nymtech.server.response.Response;
 
-// @Disabled("These tests fail when NYM Client is not running locally, this will be fixed!")
+@Disabled("These tests fail when NYM Client is not running locally, this will be fixed!")
 final class ServerContractTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -32,6 +33,7 @@ final class ServerContractTest {
     properties.setProperty("nym-client-url", "ws://127.0.0.1:1977");
     properties.setProperty("base-path",
         Paths.get("src", "test", "resources", "base-path").toAbsolutePath().toString());
+    properties.setProperty("secret-key", "+s+LetifkMZGxGXscVqfh7P+4PKCitnr+DJvjVE4d3Y=");
     server = new Server(properties, List.of((id, r) -> responsesReceived.put(id, r)));
     server.run();
   }
@@ -64,10 +66,10 @@ final class ServerContractTest {
     sendTestUploadFileRequest();
 
     // then
-    var expectedResponseContent = objectMapper.writeValueAsBytes(objectMapper.createObjectNode()
-        .put("path", "/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title"));
+    var expectedResponseContent = objectMapper
+        .writeValueAsBytes(objectMapper.createObjectNode().put("path", "sg47qowm2uIGcPTSbP5rnw=="));
     var expectedResponse = new Response(Response.Status.SUCCESSFUL, expectedResponseContent);
-    Awaitility.await().atMost(Duration.ofSeconds(10)).with().pollInterval(Duration.ofMillis(250))
+    Awaitility.await().atMost(Duration.ofSeconds(20)).with().pollInterval(Duration.ofMillis(250))
         .until(() -> {
           if (responsesReceived.size() != 1) {
             return false;
@@ -145,7 +147,7 @@ final class ServerContractTest {
     var selfAddress = server.getNymClient().getSelfAddress();
     var content = objectMapper.createObjectNode();
     content.put("userId", "27aefbf2-9afa-4c24-a60d-564fbf8d0916");
-    content.put("path", "/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
+    content.put("path", "/sg47qowm2uIGcPTSbP5rnw==");
     var request = new Request(UUID.fromString("acb98d59-8283-4bde-9a11-6118cb830b09"),
         Request.Type.DOWNLOAD_FILE, selfAddress, objectMapper.writeValueAsBytes(content));
 

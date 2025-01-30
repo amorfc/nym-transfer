@@ -116,7 +116,8 @@ public final class Server {
   private MessageHandler.Whole<ByteBuffer> messageHandler() {
     var objectMapper = new ObjectMapper();
     var basePath = getPropertyOrThrow("base-path");
-    var uploadFileHandler = new UploadFileHandler(objectMapper, basePath);
+    var secretKey = getPropertyOrThrow("secret-key");
+    var uploadFileHandler = new UploadFileHandler(objectMapper, basePath, secretKey);
     var downloadFileHandler = new DownloadFileHandler(objectMapper, basePath);
     var handlers =
         Map.of(Type.UPLOAD_FILE, uploadFileHandler, Type.DOWNLOAD_FILE, downloadFileHandler);

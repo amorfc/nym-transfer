@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -32,32 +33,37 @@ final class UploadFileHandlerTest {
   @Mock
   private FileUploader uploader;
   @Mock
+  private EncryptionHelper encryptionHelper;
+  @Mock
   private FileMetadataRepository repository;
 
   private UploadFileHandler underTest;
 
   @BeforeEach
   void setUp() {
-    underTest = new UploadFileHandler(objectMapper, "/base-path", uploader, repository);
+    underTest =
+        new UploadFileHandler(objectMapper, "/base-path", uploader, encryptionHelper, repository);
   }
 
   @Test
   void should_Handle_Upload_File_Request() throws IOException {
     // given
     doNothing().when(uploader).upload(anyString(), any());
+    when(encryptionHelper.encrypt(anyString())).thenReturn("encrypted-path");
     doNothing().when(repository).insert(any());
 
     // when
     var actual = underTest.handle(TestData.requestId, TestData.requestContent);
 
     // then
-    var expectedResponseContent =
-        new UploadFileResponse("/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
+    var expectedResponseContent = new UploadFileResponse("encrypted-path");
     assertThat(actual)
         .isEqualTo(Response.success(objectMapper.writeValueAsBytes(expectedResponseContent)));
 
-    verify(uploader, times(1)).upload("/base-path" + expectedResponseContent.path(),
+    verify(uploader, times(1)).upload("/base-path/" + expectedResponseContent.path(),
         TestData.content);
+
+    verify(encryptionHelper).encrypt("test-title");
 
     var argumentCaptorFileMetadata = ArgumentCaptor.forClass(FileMetadata.class);
     verify(repository, times(1)).insert(argumentCaptorFileMetadata.capture());
@@ -66,8 +72,7 @@ final class UploadFileHandlerTest {
     assertThat(insertedMetadata.userId()).isEqualTo(TestData.userId);
     assertThat(insertedMetadata.title()).isEqualTo(TestData.title);
     assertThat(insertedMetadata.message()).isEqualTo(TestData.message);
-    assertThat(insertedMetadata.path())
-        .isEqualTo("/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
+    assertThat(insertedMetadata.path()).isEqualTo("encrypted-path");
     assertThat(insertedMetadata.uploadTimestamp())
         .isGreaterThan(System.currentTimeMillis() - 5_000);
   }
@@ -82,14 +87,15 @@ final class UploadFileHandlerTest {
 
     // then
     assertThat(actual).isEqualTo(Response.unexpectedFailure());
-    verifyNoInteractions(uploader, repository);
+    verifyNoInteractions(uploader, encryptionHelper, repository);
   }
 
   @Test
   void should_Fail_When_File_Uploading_Failed() throws IOException {
     // given
-    doThrow(new IOException()).when(uploader).upload(
-        "/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title", "Hello World!".getBytes());
+    when(encryptionHelper.encrypt(anyString())).thenReturn("encrypted-path");
+    doThrow(new IOException()).when(uploader).upload("/base-path/encrypted-path",
+        "Hello World!".getBytes());
 
     // when
     var actual = underTest.handle(TestData.requestId, TestData.requestContent);

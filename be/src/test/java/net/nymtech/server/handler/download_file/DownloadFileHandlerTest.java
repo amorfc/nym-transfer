@@ -39,7 +39,7 @@ final class DownloadFileHandlerTest {
   @Test
   void should_Handle_Downdload_File_Request() throws IOException {
     // given
-    when(downloader.download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title"))
+    when(downloader.download("/base-path/encrypted-path"))
         .thenReturn(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
 
     // when
@@ -48,8 +48,7 @@ final class DownloadFileHandlerTest {
     // then
     assertThat(actual)
         .isEqualTo(new Response(Status.SUCCESSFUL, new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9}));
-    verify(downloader, times(1))
-        .download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
+    verify(downloader, times(1)).download("/base-path/encrypted-path");
   }
 
   @ParameterizedTest
@@ -69,7 +68,7 @@ final class DownloadFileHandlerTest {
   void should_Add_Slash_To_Beginning_Of_Built_Path_When_It_Is_Missing_In_Request_Content()
       throws IOException {
     // given
-    when(downloader.download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title"))
+    when(downloader.download("/base-path/encrypted-path"))
         .thenReturn(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
 
     // when
@@ -82,8 +81,7 @@ final class DownloadFileHandlerTest {
   @Test
   void should_Fail_When_File_Downloading_Failed() throws IOException {
     // given
-    when(downloader.download("/base-path/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title"))
-        .thenThrow(new IOException());
+    when(downloader.download("/base-path/encrypted-path")).thenThrow(new IOException());
 
     // when
     var actual = underTest.handle(TestData.requestId, TestData.requestContent);
@@ -109,7 +107,7 @@ final class DownloadFileHandlerTest {
       try {
         var requestContentNode = objectMapper.createObjectNode();
         requestContentNode.put("userId", "27aefbf2-9afa-4c24-a60d-564fbf8d0916");
-        requestContentNode.put("path", "/27aefbf2-9afa-4c24-a60d-564fbf8d0916/test-title");
+        requestContentNode.put("path", "/encrypted-path");
         requestContent = objectMapper.writeValueAsBytes(requestContentNode);
       } catch (Exception e) {
         throw new RuntimeException(e);

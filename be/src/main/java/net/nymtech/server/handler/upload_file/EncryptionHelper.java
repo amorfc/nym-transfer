@@ -1,4 +1,4 @@
-package net.nymtech.server.utils;
+package net.nymtech.server.handler.upload_file;
 
 /**
  * Represents the API that encrypts a given {@code String} and decrypts back.

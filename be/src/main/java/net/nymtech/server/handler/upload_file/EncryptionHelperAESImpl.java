@@ -1,4 +1,4 @@
-package net.nymtech.server.utils;
+package net.nymtech.server.handler.upload_file;
 
 import java.util.Base64;
 import javax.crypto.Cipher;
@@ -9,12 +9,12 @@ import lombok.extern.log4j.Log4j2;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Log4j2
-public final class EncryptionHelperAESImpl implements EncryptionHelper {
+final class EncryptionHelperAESImpl implements EncryptionHelper {
 
   private final Cipher encryptionCipher;
   private final Cipher decryptionCipher;
 
-  public static EncryptionHelperAESImpl of(String secretKey) {
+  static EncryptionHelperAESImpl of(String secretKey) {
     try {
       var decodedSecretKey = Base64.getDecoder().decode(secretKey);
       var secretKeySpec = new SecretKeySpec(decodedSecretKey, 0, decodedSecretKey.length, "AES");

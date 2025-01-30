@@ -16,20 +16,23 @@ public final class UploadFileHandler implements RequestHandler {
   private final ObjectMapper objectMapper;
   private final String basePath;
   private final FileUploader uploader;
+  private final EncryptionHelper encryptionHelper;
   private final FileMetadataRepository repository;
 
-  public UploadFileHandler(ObjectMapper objectMapper, String basePath) {
+  public UploadFileHandler(ObjectMapper objectMapper, String basePath, String secretKey) {
     this.objectMapper = objectMapper;
     this.basePath = basePath;
     this.uploader = new LocalFileUploader();
+    this.encryptionHelper = EncryptionHelperAESImpl.of(secretKey);
     this.repository = new InMemoryFileMetadataRepository();
   }
 
   UploadFileHandler(ObjectMapper objectMapper, String basePath, FileUploader uploader,
-      FileMetadataRepository repository) {
+      EncryptionHelper encryptionHelper, FileMetadataRepository repository) {
     this.objectMapper = objectMapper;
     this.basePath = basePath;
     this.uploader = uploader;
+    this.encryptionHelper = encryptionHelper;
     this.repository = repository;
   }
 
@@ -40,7 +43,7 @@ public final class UploadFileHandler implements RequestHandler {
 
       var content = extractContent(requestId, requestContent);
       var path = extractFilePath(content);
-      uploader.upload(basePath + path, content.content());
+      uploader.upload("%s/%s".formatted(basePath, path), content.content());
       repository.insert(buildMetadata(content, path));
       log.debug("{} file uploaded successfully!", requestId);
 
@@ -59,8 +62,7 @@ public final class UploadFileHandler implements RequestHandler {
   }
 
   private String extractFilePath(UploadFileRequest content) {
-    return "/%s/%s".formatted(content.userId(),
-        content.title().strip().toLowerCase().replace(" ", "_"));
+    return encryptionHelper.encrypt(content.title().strip().toLowerCase().replace(" ", "_"));
   }
 
   private FileMetadata buildMetadata(UploadFileRequest content, String path) {
