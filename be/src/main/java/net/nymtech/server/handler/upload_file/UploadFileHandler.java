@@ -5,6 +5,8 @@ import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import net.nymtech.server.handler.RequestHandler;
+import net.nymtech.server.handler.common.FileMetadata;
+import net.nymtech.server.handler.common.FileMetadataRepository;
 import net.nymtech.server.response.Response;
 
 /**
@@ -19,12 +21,13 @@ public final class UploadFileHandler implements RequestHandler {
   private final EncryptionHelper encryptionHelper;
   private final FileMetadataRepository repository;
 
-  public UploadFileHandler(ObjectMapper objectMapper, String basePath, String secretKey) {
+  public UploadFileHandler(ObjectMapper objectMapper, String basePath, String secretKey,
+      FileMetadataRepository fileMetadataRepository) {
     this.objectMapper = objectMapper;
     this.basePath = basePath;
     this.uploader = new LocalFileUploader();
     this.encryptionHelper = EncryptionHelperAESImpl.of(secretKey);
-    this.repository = new InMemoryFileMetadataRepository();
+    this.repository = fileMetadataRepository;
   }
 
   UploadFileHandler(ObjectMapper objectMapper, String basePath, FileUploader uploader,
@@ -67,7 +70,8 @@ public final class UploadFileHandler implements RequestHandler {
 
   private FileMetadata buildMetadata(UploadFileRequest content, String path) {
     return new FileMetadata(UUID.randomUUID(), content.userId(), content.title(), content.message(),
-        path, System.currentTimeMillis() /* TODO: Change with TimeUtils! */);
+        path, content.content().length,
+        System.currentTimeMillis() /* TODO: Change with TimeUtils! */);
   }
 
 }

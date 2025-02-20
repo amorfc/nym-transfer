@@ -12,7 +12,7 @@ public record Request(UUID id, Request.Type type, byte[] clientAddress, byte[] c
   @Getter
   @Accessors(fluent = true, chain = true, makeFinal = true)
   public enum Type {
-    UPLOAD_FILE((byte) 1), DOWNLOAD_FILE((byte) 2);
+    UPLOAD_FILE((byte) 1), DOWNLOAD_FILE((byte) 2), GET_FILE((byte) 3);
 
     private final byte value;
 
@@ -24,6 +24,7 @@ public record Request(UUID id, Request.Type type, byte[] clientAddress, byte[] c
       return switch (value) {
         case 1 -> true;
         case 2 -> true;
+        case 3 -> true;
         default -> false;
       };
     }
@@ -32,6 +33,7 @@ public record Request(UUID id, Request.Type type, byte[] clientAddress, byte[] c
       return switch (value) {
         case 1 -> Type.UPLOAD_FILE;
         case 2 -> Type.DOWNLOAD_FILE;
+        case 3 -> Type.GET_FILE;
         default -> null;
       };
     }

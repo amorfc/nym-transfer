@@ -23,6 +23,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.nymtech.server.handler.common.FileMetadata;
+import net.nymtech.server.handler.common.FileMetadataRepository;
 import net.nymtech.server.response.Response;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,6 +75,7 @@ final class UploadFileHandlerTest {
     assertThat(insertedMetadata.title()).isEqualTo(TestData.title);
     assertThat(insertedMetadata.message()).isEqualTo(TestData.message);
     assertThat(insertedMetadata.path()).isEqualTo("encrypted-path");
+    assertThat(insertedMetadata.sizeInBytes()).isEqualTo(12L);
     assertThat(insertedMetadata.uploadTimestamp())
         .isGreaterThan(System.currentTimeMillis() - 5_000);
   }

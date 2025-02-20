@@ -1,8 +1,8 @@
-package net.nymtech.server.handler.upload_file;
+package net.nymtech.server.handler.common;
 
 import java.util.Optional;
 
-interface FileMetadataRepository {
+public interface FileMetadataRepository {
 
   void insert(FileMetadata fileMetadataToInsert);
 

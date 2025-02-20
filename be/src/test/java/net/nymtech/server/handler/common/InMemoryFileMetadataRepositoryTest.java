@@ -1,4 +1,4 @@
-package net.nymtech.server.handler.upload_file;
+package net.nymtech.server.handler.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
@@ -58,7 +58,7 @@ class InMemoryFileMetadataRepositoryTest {
   static class TestData {
     private static final FileMetadata fileMetadataToInsert =
         new FileMetadata(UUID.randomUUID(), UUID.randomUUID(), "test-title",
-            "The file I wanted to share with you!", "/base-path/test-title", 1738099856L);
+            "The file I wanted to share with you!", "/base-path/test-title", 12L, 1738099856L);
   }
 
 }

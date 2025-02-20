@@ -1,9 +1,9 @@
-package net.nymtech.server.handler.upload_file;
+package net.nymtech.server.handler.common;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-class InMemoryFileMetadataRepository implements FileMetadataRepository {
+public final class InMemoryFileMetadataRepository implements FileMetadataRepository {
 
   private final ConcurrentHashMap<String, FileMetadata> fileMetadata = new ConcurrentHashMap<>();
 

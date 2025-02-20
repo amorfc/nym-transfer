@@ -27,7 +27,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import net.nymtech.server.handler.common.InMemoryFileMetadataRepository;
 import net.nymtech.server.handler.download_file.DownloadFileHandler;
+import net.nymtech.server.handler.get_file.GetFileHandler;
 import net.nymtech.server.handler.upload_file.UploadFileHandler;
 import net.nymtech.server.request.Request.Type;
 import net.nymtech.server.response.Response;
@@ -117,10 +119,13 @@ public final class Server {
     var objectMapper = new ObjectMapper();
     var basePath = getPropertyOrThrow("base-path");
     var secretKey = getPropertyOrThrow("secret-key");
-    var uploadFileHandler = new UploadFileHandler(objectMapper, basePath, secretKey);
+    var fileMetadataRepository = new InMemoryFileMetadataRepository();
+    var uploadFileHandler =
+        new UploadFileHandler(objectMapper, basePath, secretKey, fileMetadataRepository);
     var downloadFileHandler = new DownloadFileHandler(objectMapper, basePath);
-    var handlers =
-        Map.of(Type.UPLOAD_FILE, uploadFileHandler, Type.DOWNLOAD_FILE, downloadFileHandler);
+    var getFileHandler = new GetFileHandler(objectMapper, fileMetadataRepository);
+    var handlers = Map.of(Type.UPLOAD_FILE, uploadFileHandler, Type.DOWNLOAD_FILE,
+        downloadFileHandler, Type.GET_FILE, getFileHandler);
     return this.nymClient.new MessageHandlerImpl(handlers);
   }
 
