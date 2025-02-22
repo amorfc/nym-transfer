@@ -115,9 +115,11 @@ export const nymApi = createApi({
             getState as () => RootState
           );
 
+          console.log("sending payload", { payload });
           const requestPayload = {
             userId,
             title: payload.title,
+            message: payload.message,
             content: Array.from(payload.content),
           };
 

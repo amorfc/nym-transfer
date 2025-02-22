@@ -11,24 +11,38 @@ import {
   useDownloadFileMutation,
   useGetFileInfoQuery,
 } from "@/store/api/nymApi";
-import { downloadFileToLocal } from "@/utils/fileUtils";
+import {
+  downloadFileToLocal,
+  formatKilobytesToHuman,
+  formatTimestamp,
+} from "@/utils/fileUtils";
 import { Layout } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Navigate, useParams } from "react-router";
 import { truncateMiddle } from "@/utils/stringUtils";
 
 const DownloadRoute = () => {
-  const { fileId, name } = useParams();
+  console.log(useParams());
+
+  const params = useParams();
+  const path = params["*"] ?? "";
+
   const [downloadFile] = useDownloadFileMutation();
   const { isNymClientReady } = useNymClientStatus();
   const { data: fileInfo, isLoading: isLoadingInfo } = useGetFileInfoQuery(
     {
-      payload: { path: `${fileId}/${name}` },
+      payload: { path },
     },
     {
-      skip: !fileId || !name || !isNymClientReady,
+      skip: !path || !isNymClientReady,
     }
   );
+
+  const {
+    title: fileTitle = "UnknownTitle",
+    sizeInKilobytes,
+    uploadTimestamp,
+  } = fileInfo || {};
   const colors = useThemeColors();
   const { goToUpload } = useAppNavigation();
   const [isDownloaded, setIsDownloaded] = useState(false);
@@ -39,13 +53,11 @@ const DownloadRoute = () => {
     try {
       setIsDownloading(true);
       const { content } = await downloadFile({
-        payload: {
-          path: `${fileId}/${name}`,
-        },
+        payload: { path },
       }).unwrap();
 
-      if (content && name) {
-        downloadFileToLocal(content, name);
+      if (content) {
+        downloadFileToLocal(content, fileTitle);
         setIsDownloaded(true);
       }
     } catch (err) {
@@ -54,17 +66,11 @@ const DownloadRoute = () => {
     } finally {
       setIsDownloading(false);
     }
-  }, [downloadFile, fileId, name]);
-
-  useEffect(() => {
-    if (isNymClientReady && !isDownloaded && !error) {
-      handleDownload();
-    }
-  }, [isNymClientReady, handleDownload, isDownloaded, error]);
+  }, [downloadFile, fileTitle, path]);
 
   // Validate URL parameters
-  if (!fileId || fileId.startsWith(":") || !name || name.startsWith(":")) {
-    console.error("Invalid parameters:", { fileId, name });
+  if (!path) {
+    console.error("Invalid parameters:", { path });
     return <Navigate to={ROUTES.UPLOAD} replace />;
   }
 
@@ -98,10 +104,16 @@ const DownloadRoute = () => {
             gap: "1rem",
           }}
         >
-          <div>
-            <NymText>Title: {fileInfo.title}</NymText>
-            <NymText>Size: {fileInfo.size_human}</NymText>
-            <NymText>Uploaded: {fileInfo.uploadTimestamp}</NymText>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            <NymText>Title: {fileTitle}</NymText>
+            <NymText>
+              Size: {formatKilobytesToHuman(sizeInKilobytes || 0)}
+            </NymText>
+            <NymText>
+              Uploaded: {formatTimestamp(uploadTimestamp || "")}
+            </NymText>
             {fileInfo.message && <NymText>Message: {fileInfo.message}</NymText>}
           </div>
           <NymButton onClick={handleDownload}>Download File</NymButton>
@@ -167,7 +179,7 @@ const DownloadRoute = () => {
         >
           <NymText>
             <NymText color={colors.primary} weight="bold">
-              {truncateMiddle(name)}
+              {truncateMiddle(fileTitle)}
             </NymText>{" "}
             Successfully Downloaded
           </NymText>

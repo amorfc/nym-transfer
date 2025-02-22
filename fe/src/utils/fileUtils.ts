@@ -36,3 +36,35 @@ export const downloadFileToLocal = (content: number[], filename: string) => {
     window.location.href = url;
   }
 };
+
+export const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+};
+
+export const formatKilobytesToHuman = (kilobytes: number): string => {
+  if (kilobytes === 0) return "0 KB";
+  if (kilobytes < 1024) return `${kilobytes.toFixed(2)} KB`;
+  if (kilobytes < 1024 * 1024) return `${(kilobytes / 1024).toFixed(2)} MB`;
+  return `${(kilobytes / (1024 * 1024)).toFixed(2)} GB`;
+};
+
+export const formatTimestamp = (timestamp: string): string => {
+  try {
+    const date = new Date(timestamp);
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    }).format(date);
+  } catch (error) {
+    console.error("Error formatting timestamp:", error);
+    return timestamp; // Return original timestamp if parsing fails
+  }
+};

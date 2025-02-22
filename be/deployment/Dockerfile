@@ -12,7 +12,7 @@ RUN apt-get update && \
     # clean up cached package lists
     rm -rf /var/lib/apt/lists/*
 
-RUN wget -q https://github.com/nymtech/nym/releases/download/nym-binaries-v2024.14-crunch/nym-client && \
+RUN wget -q https://github.com/nymtech/nym/releases/download/nym-binaries-v2025.3-ruta/nym-client && \
     chmod +x nym-client
 
 RUN wget -q https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/21.0.5+11/openlogic-openjdk-jre-21.0.5+11-linux-x64.tar.gz && \
