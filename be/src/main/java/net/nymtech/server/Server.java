@@ -57,6 +57,7 @@ public final class Server {
         isRunning.set(true);
 
         connectToNymClient();
+        nymClient.getSelfAddress(); // TODO: Remove!
 
         runningLatch.await();
         log.info("Server is stopped successfully!");
