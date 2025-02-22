@@ -22,8 +22,6 @@ import { Navigate, useParams } from "react-router";
 import { truncateMiddle } from "@/utils/stringUtils";
 
 const DownloadRoute = () => {
-  console.log(useParams());
-
   const params = useParams();
   const path = params["*"] ?? "";
 

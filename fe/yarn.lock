@@ -613,10 +613,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@nymproject/sdk-full-fat@^1.2.4-rc.1":
-  version "1.2.4-rc.1"
-  resolved "https://registry.yarnpkg.com/@nymproject/sdk-full-fat/-/sdk-full-fat-1.2.4-rc.1.tgz#00e7e1d992f0e93bacd8bd25ff99ba5672c2da10"
-  integrity sha512-VZuf87L8py0ehDLI6dEeJzundRrWqEJSbRsLLAHRMutrQQzzVlEtZQcDQCFaShcvqbYcKdv0UQJOkbvw4tc5dg==
+"@nymproject/sdk-full-fat@^1.4.0-rc.0":
+  version "1.4.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@nymproject/sdk-full-fat/-/sdk-full-fat-1.4.0-rc.0.tgz#6b08ee96d99da0ad050869091f267c8d01491c1a"
+  integrity sha512-v7pb7INmTgK/TgOw9/t6mVS1rj17wcInI6V3Kq9ZW4EsvLABR9iVI34QvrKUnRxlyb7Hca8K18RikPKH1tJg5w==
 
 "@rc-component/async-validator@^5.0.3":
   version "5.0.4"

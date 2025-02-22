@@ -34,8 +34,6 @@ export class FileInfoMixnetResponse extends BaseMixnetResponse {
   }
 
   public asResponseData(): FileInfoResponseData {
-    console.log(this.fileInfo);
-
     return {
       title: this.fileInfo?.title ?? "",
       message: this.fileInfo?.message ?? "",

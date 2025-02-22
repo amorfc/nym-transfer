@@ -18,6 +18,7 @@ enum UploadState {
   INITIAL, // Initial state where no input has been provided.
   IN_PROGRESS, // The upload is currently in progress.
   COMPLETED, // The upload is finished.
+  ERROR, // The upload failed.
 }
 
 const UploadRoute = () => {
@@ -61,7 +62,7 @@ const UploadRoute = () => {
 
         await uploadFile({
           payload: {
-            title,
+            title: `${title} - ${file.name}`,
             message: messageText,
             content,
           },
@@ -77,6 +78,7 @@ const UploadRoute = () => {
       setMessageText("");
       setSelectedFiles([]);
     } catch (error) {
+      setUploadState(UploadState.ERROR);
       notifyError({
         message: error instanceof Error ? error.message : "Upload failed",
       });
