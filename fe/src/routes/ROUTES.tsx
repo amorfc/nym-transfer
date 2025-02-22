@@ -2,7 +2,7 @@ export const ROUTES = {
   UPLOAD: "/upload",
   UPLOAD_TEST: "/upload-test",
   WASM_TEST: "/wasm-test",
-  DOWNLOAD: "/download/:fileId/:name",
+  DOWNLOAD: "/download/*",
   BASE: "/",
   NOT_FOUND: "*", // Wildcard route for unknown paths
 };

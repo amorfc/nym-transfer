@@ -25,11 +25,9 @@ const UploadRoute = () => {
   const { recipientAddress } = useSelectNymClient();
   const { isNymClientReady } = useNymClientStatus();
   const [title, setTitle] = useState("");
+  const [messageText, setMessageText] = useState("");
   const [uploadState, setUploadState] = useState<UploadState>(
     UploadState.INITIAL
-  );
-  const [messageText, setMessageText] = useState(
-    "Messages disabled for now 🦀"
   );
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -63,7 +61,8 @@ const UploadRoute = () => {
 
         await uploadFile({
           payload: {
-            title: multipleFiles ? `${title} - ${file.name}` : file.name,
+            title,
+            message: messageText,
             content,
           },
         }).unwrap();
@@ -170,10 +169,11 @@ const UploadRoute = () => {
         />
 
         <TextArea
-          disabled
+          placeholder="Please enter a message 🦀"
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
           rows={4}
+          maxLength={255}
         />
         {selectedFiles.length > 0 && (
           <NymUploadAllButton

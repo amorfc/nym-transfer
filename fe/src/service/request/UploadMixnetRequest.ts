@@ -6,6 +6,7 @@ import {
 export interface UploadPayload {
   userId: string;
   title: string;
+  message: string;
   content: number[]; // Assuming content is an array of bytes
 }
 
