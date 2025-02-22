@@ -69,6 +69,7 @@ final class NymClient {
       if (!selfAddressFetchLatch.await(3, TimeUnit.SECONDS)) {
         throw new NymClientException("Self address couldn't be received in 3 seconds!");
       }
+      log.info("Self address fetched: {}", Arrays.toString(selfAddress));
     }
   }
 
