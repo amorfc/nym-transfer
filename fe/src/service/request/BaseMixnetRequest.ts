@@ -23,6 +23,7 @@ export enum ServerResponseTag {
 export enum MixnetRequestType {
   UPLOAD_FILE = 1,
   DOWNLOAD_FILE = 2,
+  GET_FILE_INFO = 3,
 }
 
 export type MixnetRequestContent = UploadPayload | DownloadPayload;

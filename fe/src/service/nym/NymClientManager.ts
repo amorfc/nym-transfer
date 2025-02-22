@@ -17,6 +17,8 @@ import { BaseMixnetResponse } from "@/service/response/BaseMixnetResponse";
 import { DownloadMixnetResponse } from "@/service/response/DownloadMixnetResponse";
 import { UploadMixnetResponse } from "@/service/response/UploadMixnetResponse";
 import { Env } from "@/env";
+import { FileInfoMixnetRequest } from "@/service/request/FileInfoMixnetRequest";
+import { FileInfoMixnetResponse } from "@/service/response/FileInfoMixnetResponse";
 
 export type NymClientEventHandlers = {
   onConnected?: () => void;
@@ -283,6 +285,13 @@ class NymClientManager {
   ): Promise<UploadMixnetResponse> {
     const baseResponse = await this.sendMessage(req);
     return UploadMixnetResponse.fromBaseResponse(baseResponse);
+  }
+
+  public async sendFileInfoRequest(
+    req: FileInfoMixnetRequest
+  ): Promise<FileInfoMixnetResponse> {
+    const baseResponse = await this.sendMessage(req);
+    return FileInfoMixnetResponse.fromBaseResponse(baseResponse);
   }
 
   async sendMessage(request: BaseMixnetRequest): Promise<BaseMixnetResponse> {
