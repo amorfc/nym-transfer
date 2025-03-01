@@ -27,7 +27,7 @@ You can use that client address to send requests to the backend application thro
 
 ### Upload File API
 
-This API provides the user to upload files to their own space. In order to call this API, a client should make a [_send_ request](https://nymtech.net/docs/developers/clients/websocket/usage#sending-binary-data) to NYM Client. The payload of the send request should include the data below:
+This API provides the user to upload files to share with others. In order to call this API, a client should make a [_send_ request](https://nymtech.net/docs/developers/clients/websocket/usage#sending-binary-data) to NYM Client. The payload of the send request should include the data below:
 
 #### Request
 
@@ -41,6 +41,7 @@ This API provides the user to upload files to their own space. In order to call 
   {
     "userId": "27aefbf2-9afa-4c24-a60d-564fbf8d0916",
     "title": "title",
+    "message": "message to the recepient",
     "content": [1, 2, 3, 4, 5, 6, 7, 8, 9]
   }
   ```
@@ -63,11 +64,44 @@ The payload of the response that the client consumes from NYM Mixnet will be as 
     ```
     The path in the content can be used to dowload the file uploaded.
 
-You can take a look into [the contact test](/be/src/test/java/net/nymtech/server/ServerContractTest.java#L59) that uploads a file for more detail.
+You can take a look into [the contract test](/be/src/test/java/net/nymtech/server/ServerContractTest.java#L62) that uploads a file for more detail.
+
+### Get File API
+
+This API provides the user to get file metadata that are shared with them. In order to call this API, a client should make a [_send_ request](https://nymtech.net/docs/developers/clients/websocket/usage#sending-binary-data) to NYM Client. The payload of the send request should be the same as upload file request except the request content:
+
+#### Request
+
+- **Request content**: JSON formatted data that is particular to the get file API. [See for the format](/be/src/main/java/net/nymtech/server/handler/get_file/GetFileRequest.java). An example content:
+  ```json
+  {
+    "userId": "27aefbf2-9afa-4c24-a60d-564fbf8d0916",
+    "path": "/27aefbf2-9afa-4c24-a60d-564fbf8d0916/title"
+  }
+  ```
+
+So the payload should be again _at least 16(request ID) + 1(request type) + 4(length of client address) + 4(length of request content) = <ins>25 bytes</ins>_.
+
+#### Response
+
+The payload of the response that the client consumes from NYM Mixnet will be the same as upload file response except the response content:
+- **Response content**: This field is up to the response status.
+  - **If the request failed**, i.e. _response status = 2_: A UTF-8 encoded string that gives the detail about the failure.
+  - **If the request succeeded**, i.e. _response status = 1_: JSON formatted data that is particular to the get file API. [See for the format](/be/src/main/java/net/nymtech/server/handler/get_file/GetFileResponse.java). An example content:
+    ```json
+    {
+      "title": "title",
+      "message": "message to the recepient",
+      "sizeInKilobytes": 0.012,
+      "uploadTimestamp": 1740855017
+    }
+    ```
+
+You can take a look into [the contract test](/be/src/test/java/net/nymtech/server/ServerContractTest.java#L114) that downloads a file for more detail.
 
 ### Download File API
 
-This API provides the user to dowloand files from their own space. In order to call this API, a client should make a [_send_ request](https://nymtech.net/docs/developers/clients/websocket/usage#sending-binary-data) to NYM Client. The payload of the send request should be the same as upload file request except the request content:
+This API provides the user to dowload files that are shared with them. In order to call this API, a client should make a [_send_ request](https://nymtech.net/docs/developers/clients/websocket/usage#sending-binary-data) to NYM Client. The payload of the send request should be the same as upload file request except the request content:
 
 #### Request
 
@@ -87,3 +121,5 @@ The payload of the response that the client consumes from NYM Mixnet will be the
 - **Response content**: This field is up to the response status.
   - **If the request failed**, i.e. _response status = 2_: A UTF-8 encoded string that gives the detail about the failure.
   - **If the request succeeded**, i.e. _response status = 1_: File bytes.
+
+You can take a look into [the contract test](/be/src/test/java/net/nymtech/server/ServerContractTest.java#L84) that downloads a file for more detail.
