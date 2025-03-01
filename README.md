@@ -21,13 +21,7 @@ To run this application, follow these steps:
 
 4. **Run the Backend Server**:
 
-   - This application listens to the `nym-client` that you ran earlier. It connects using the WebSocket URL `ws://127.0.0.1:1977`, which is the default for `nym-client`. Please ensure you save the `client address` from the output as it will be needed later.
-   - To run the backend, navigate to the `jsbe` folder. It requires a NodeJS environment. If you don't have NodeJS installed, you can download it [here](https://nodejs.org/en/download/package-manager).
-   - If your environment is already set up, open the terminal, navigate to the `jsbe` folder, and run the following commands:
-     ```bash
-     yarn && yarn run dev
-     ```
-     The application will start and begin listening for WebSocket events from `nym-client`.
+   - Please use this [doc for be](https://github.com/amorfc/nym-transfer/tree/stable/be)
 
 5. **Run the Frontend Application**:
    - Navigate to the `fe` folder in your terminal and run the following commands:
