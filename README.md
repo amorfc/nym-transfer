@@ -4,6 +4,9 @@
 
 ## Overview
 
+> [!Warning]
+> Please be aware since current implementation doesn't support concurrent requests please don't use multiple browser tabs at the same time to avoid new connection to being open.
+
 This project demonstrates how to use the Nym client to create a secure and private communication channel. The Nym client is initialized using the Nym binary from the releases, and a Nym client is set up following the instructions provided in the [Nym WebSocket Client documentation](https://nymtech.net/developers/clients/websocket-client.html).
 
 ## Running the Application
