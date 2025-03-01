@@ -97,7 +97,7 @@ The payload of the response that the client consumes from NYM Mixnet will be the
     }
     ```
 
-You can take a look into [the contract test](/be/src/test/java/net/nymtech/server/ServerContractTest.java#L114) that downloads a file for more detail.
+You can take a look into [the contract test](/be/src/test/java/net/nymtech/server/ServerContractTest.java#L114) that gets a file metadata for more detail.
 
 ### Download File API
 
