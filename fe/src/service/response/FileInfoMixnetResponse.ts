@@ -7,7 +7,6 @@ export interface FileInfoResponseData {
   title: string;
   message: string;
   sizeInKilobytes: number;
-  size_human: string;
   uploadTimestamp: string;
   status: MixnetResponseStatus;
 }
@@ -38,7 +37,6 @@ export class FileInfoMixnetResponse extends BaseMixnetResponse {
       title: this.fileInfo?.title ?? "",
       message: this.fileInfo?.message ?? "",
       sizeInKilobytes: this.fileInfo?.sizeInKilobytes ?? 0,
-      size_human: this.fileInfo?.size_human ?? "0B",
       uploadTimestamp: this.fileInfo?.uploadTimestamp ?? "",
       status: this.status,
     };
