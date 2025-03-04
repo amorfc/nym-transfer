@@ -39,6 +39,7 @@ const UploadE2ETestRoute = ({ mode }: Props) => {
       await uploadFile({
         payload: {
           title: `test-${fileSize}kb-${Date.now()}`,
+          message: "This is a test message",
           content,
         },
       }).unwrap();
