@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   createNymMixnetClient,
   NymMixnetClient,
-  Payload,
 } from "@nymproject/sdk-full-fat";
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
 import { Input } from "antd";
