@@ -1,11 +1,13 @@
 import AppLayout from "@/components/layout/AppLayout";
-import DownloadRoute from "@/routes/DownloadRoute";
+import DownloadRoute from "@/routes/main/DownloadRoute";
 import { ROUTES } from "@/routes/ROUTES";
-import UploadRoute from "@/routes/UploadRoute";
+import UploadRoute from "@/routes/main/UploadRoute";
 import UploadE2ETestRoute, {
   UploadE2ETestMode,
-} from "@/routes/UploadE2ETestRoute";
-import WasmE2ETestRoute, { WasmE2ETestMode } from "@/routes/WasmE2ETestRoute";
+} from "@/routes/test/UploadE2ETestRoute";
+import WasmE2ETestRoute, {
+  WasmE2ETestMode,
+} from "@/routes/test/WasmE2ETestRoute";
 import { Routes, Route, Navigate } from "react-router";
 
 function AppRoutes() {
