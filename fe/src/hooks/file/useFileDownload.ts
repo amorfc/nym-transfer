@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 import {
@@ -17,14 +17,28 @@ export const useFileDownload = (initialPath: string) => {
     isDownloading: false,
     isDownloaded: false,
     error: null as string | null,
+    hasAttemptedFetch: false,
   });
 
-  const { data: fileInfo, isLoading } = useGetFileInfoQuery(
+  const {
+    data: fileInfo,
+    isLoading,
+    isError,
+  } = useGetFileInfoQuery(
     { payload: { path: downloadState.path } },
     {
       skip: !downloadState.path || !isNymClientReady,
     }
   );
+
+  useEffect(() => {
+    if (isLoading || isError) {
+      setDownloadState((prev) => ({
+        ...prev,
+        hasAttemptedFetch: true,
+      }));
+    }
+  }, [isLoading, isError]);
 
   const [downloadFile] = useDownloadFileMutation();
 
@@ -63,6 +77,7 @@ export const useFileDownload = (initialPath: string) => {
   return {
     fileInfo,
     isLoading,
+    isError,
     handleDownload,
     downloadState,
     goToUpload,

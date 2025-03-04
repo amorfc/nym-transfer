@@ -1,7 +1,6 @@
-import { Layout } from "antd";
+import { Flex, Layout } from "antd";
 import { Navigate, useParams } from "react-router";
 
-import NymFlexContainer from "@/components/common/NymFlexContainer";
 import DownloadErrorContent from "@/components/download/DownloadErrorContent";
 import DownloadFileInfoContent from "@/components/download/DownloadFileInfoContent";
 import DownloadLoadingContent from "@/components/download/DownloadLoadingContent";
@@ -14,22 +13,24 @@ const DownloadRoute = () => {
   const params = useParams();
   const path = params["*"] ?? "";
 
-  const { fileInfo, isLoading, handleDownload, downloadState, goToUpload } =
-    useFileDownload(path);
+  const {
+    fileInfo,
+    isLoading,
+    isError,
+    handleDownload,
+    downloadState,
+    goToUpload,
+  } = useFileDownload(path);
 
   const renderContent = () => {
-    if (!downloadState.path) {
-      return <Navigate to={ROUTES.UPLOAD} replace />;
-    }
-
     if (isLoading) {
       return <DownloadLoadingContent message="Fetching file information..." />;
     }
 
-    if (downloadState.error) {
+    if (isError) {
       return (
         <DownloadErrorContent
-          error={downloadState.error}
+          error={downloadState.error || "Failed to fetch file information"}
           onRetry={handleDownload}
           onGoBack={goToUpload}
         />
@@ -54,25 +55,30 @@ const DownloadRoute = () => {
         <DownloadFileInfoContent
           fileInfo={fileInfo}
           onDownload={handleDownload}
+          onGoBack={goToUpload}
         />
       );
     }
 
-    return <Navigate to={ROUTES.UPLOAD} replace />;
+    // If fetch has been attempted but no file info, show error
+    if (downloadState.hasAttemptedFetch && !downloadState.path) {
+      return <Navigate to={ROUTES.UPLOAD} replace />;
+    }
+
+    return (
+      <DownloadErrorContent
+        error="No file information available"
+        onRetry={handleDownload}
+        onGoBack={goToUpload}
+      />
+    );
   };
 
   return (
     <Layout style={{ background: "transparent" }}>
-      <NymFlexContainer
-        style={{
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1rem",
-        }}
-      >
+      <Flex vertical style={{ width: "100%" }}>
         {renderContent()}
-      </NymFlexContainer>
+      </Flex>
     </Layout>
   );
 };
