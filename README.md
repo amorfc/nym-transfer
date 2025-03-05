@@ -1,59 +1,82 @@
-# My Project
+# Nym Transfer: Setup and Usage
 
-![Project Diagram](assets/structure.png)
-
-## Overview
-
-> [!Warning]
-> Please be aware since current implementation doesn't support concurrent requests please don't use multiple browser tabs at the same time to avoid new connection to being open.
-
-This project demonstrates how to use the Nym client to create a secure and private communication channel. The Nym client is initialized using the Nym binary from the releases, and a Nym client is set up following the instructions provided in the [Nym WebSocket Client documentation](https://nymtech.net/developers/clients/websocket-client.html).
-
-## Running the Application
-
-To run this application, follow these steps:
-
-1. **Download the Nym Binary**: Download the Nym binary from the releases page.
-2. **Initialize the Nym Client**: Follow the instructions in the [Nym WebSocket Client documentation](https://nymtech.net/developers/clients/websocket-client.html) to initialize the Nym client.
-3. **Run the Nym Client**: Start the Nym client on your local machine.
-
-```sh
-./nym-client init --id your-client-id
-./nym-client run --id your-client-id
-```
-
-4. **Run the Backend Server**:
-
-   - Please use this [doc for be](https://github.com/amorfc/nym-transfer/tree/stable/be)
-
-## 5. Run the Frontend Application
-
-1. **Set Up Environment Variables**  
-   - Copy the `.env.example` file in the `fe` folder and rename it to `.env`.  
-   - In your new `.env` file, you will see entries for:
-     - **`VITE_NYM_ENTRY_CLIENT_WS_URL`** – This should point to the local Nym client’s WebSocket URL (e.g., `ws://localhost:1977` if that’s where your client is running).  
-     - **`VITE_NYM_BACKEND_CLIENT_ADDRESS_BYTES`** – This must be set to the byte array address of your Nym client that’s connected to the backend, allowing your local client to communicate. (This will be fixed this is just a workaround)
-
-2. **Install Dependencies and Start the App**  
-   - Open a terminal, navigate to the `fe` folder, and run:
-     ```bash
-     yarn && yarn run dev
-     ```
-   - After the development server starts, **keep your browser console open** to monitor logs or potential errors.
-
-3. **Confirm Connectivity**  
-   - Once you load the frontend in your browser, it will attempt to connect to your local Nym client using the environment variables. Check the console for any connection errors or success messages.
+This guide explains how to set up and run the Nym client, the backend application, and the frontend application, including an optional benchmark feature for measuring file upload/download performance.
 
 ---
 
-## Example Commands
+## 1. Nym Client Setup
 
-### Starting the Nym Client
+1. **Download the Nym Binary**  
+   - Obtain the Nym binary from the [Nym releases page](https://github.com/nymtech/nym/releases) (or the official source).
 
+2. **Initialize the Nym Client**  
+   - Follow the [Nym WebSocket Client documentation](https://nymtech.net/developers/clients/websocket-client.html) to initialize the client correctly:
+     ```sh
+     ./nym-client init --id your-client-id
+     ```
+
+3. **Run the Nym Client**  
+   - Start the Nym client on your local machine:
+     ```sh
+     ./nym-client run --id your-client-id
+     ```
+
+---
+
+## 2. Backend Application
+
+1. **Refer to the Backend Documentation**  
+   - Please see the [backend repo documentation](https://github.com/amorfc/nym-transfer/tree/stable/be) for instructions on building and running the backend.  
+   - Once you have the backend running, it will log an address you can use for `VITE_NYM_BACKEND_CLIENT_ADDRESS_BYTES` (explained in the next section).
+
+---
+
+## 3. Frontend Application
+
+1. **Set Up Environment Variables**  
+   - Navigate to the `fe` folder and copy `.env.example` to a file named `.env`.  
+   - In your new `.env` file, set:
+     - **`VITE_NYM_ENTRY_CLIENT_WS_URL`**: The WebSocket URL for your local Nym client (e.g., `ws://localhost:1977`).  
+     - **`VITE_NYM_BACKEND_CLIENT_ADDRESS_BYTES`**: The byte array address of your Nym client connected to the backend (this is typically logged when the backend starts).
+
+2. **Install Dependencies and Start the App**  
+   - From the `fe` folder:
+     ```bash
+     yarn && yarn run dev
+     ```
+   - Keep your browser console open to see status messages or errors.
+
+3. **Confirm Connectivity**  
+   - Load the frontend in your browser. It will attempt to connect to your local Nym client using the environment variables. Check the browser console for any errors or success messages.
+
+---
+
+## 4. Benchmark Testing (Development Mode Only)
+
+A benchmark feature is included to measure file upload and download performance. This feature is **only available** when running in development mode.
+
+1. **Run the Frontend in Dev Mode**  
+   - Make sure you have followed the steps above (Nym client, backend, and frontend in dev mode).
+
+2. **Access the Benchmark Page**  
+   - In your browser, go to `[base-url]/benchmark` (e.g., `http://localhost:3000/benchmark`).
+   - You should see a dedicated page or modal to:
+     - **Upload a file** (test upload speed and duration).  
+     - **Get file info** (test how quickly the app retrieves file metadata).  
+     - **Download a file** (test download speed and duration).
+
+3. **Review the Results**  
+   - The modal or page will display performance metrics. These are for internal testing and may not reflect real-world production performance.
+
+**Note:** The benchmark route does **not** appear in production builds—it is only active in dev or staging environments.
+
+---
+
+## 5. Example Commands Reference
+
+Below are commonly used commands to get everything running:
+
+### Nym Client
 ```sh
 ./nym-client init --id your-client-id
 ./nym-client run --id your-client-id
-```
-```bash
-yarn && yarn run dev
-```
