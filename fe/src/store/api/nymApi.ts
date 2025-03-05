@@ -175,6 +175,7 @@ export const {
   useUploadFileMutation,
   useDownloadFileMutation,
   useGetFileInfoQuery,
+  useLazyGetFileInfoQuery,
 } = nymApi;
 
 function validateClientState(getState: () => RootState) {
