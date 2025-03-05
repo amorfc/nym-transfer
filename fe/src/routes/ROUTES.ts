@@ -1,10 +1,11 @@
 export const ROUTES = {
+  BASE: "/",
+  BENCHMARK: "/benchmark",
+  DOWNLOAD: "/download/*",
+  NOT_FOUND: "*", // Wildcard route for unknown paths
   UPLOAD: "/upload",
   UPLOAD_TEST: "/upload-test",
   WASM_TEST: "/wasm-test",
-  DOWNLOAD: "/download/*",
-  BASE: "/",
-  NOT_FOUND: "*", // Wildcard route for unknown paths
 };
 
 export type RouteKey = keyof typeof ROUTES;
