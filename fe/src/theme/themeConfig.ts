@@ -47,6 +47,7 @@ const getAntdTheme = (colors: ThemeColors): ThemeConfig => ({
       colorBgContainer: colors.bgSecondary, // Matches card container
       colorBorder: colors.borderPrimary, // Subtle border for cards
       borderRadius: 12,
+      padding: 0,
     },
     Typography: {
       colorText: colors.textPrimary,
@@ -73,6 +74,16 @@ const getAntdTheme = (colors: ThemeColors): ThemeConfig => ({
       colorText: colors.textPrimary,
       colorTextHeading: colors.textPrimary,
       borderRadius: 12,
+    },
+    Select: {
+      colorBgContainer: colors.bgOverlay,
+      colorBorder: colors.borderPrimary,
+      optionSelectedBg: colors.bgOverlay,
+      borderRadius: 8,
+    },
+    Collapse: {
+      headerPadding: 0,
+      contentPadding: 0,
     },
   },
 });

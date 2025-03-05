@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Space, Collapse, CollapseProps, ConfigProvider } from "antd";
+import { Card, Space, Collapse, CollapseProps } from "antd";
 import {
   FileOutlined,
   ClockCircleOutlined,
@@ -79,26 +79,15 @@ const FileInfoCard: React.FC<FileInfoCardProps> = ({ fileInfo }) => {
           <NymText secondary>{formatTimestamp(uploadTimestamp)}</NymText>
         </Space>
         {message && (
-          <ConfigProvider
-            theme={{
-              components: {
-                Collapse: {
-                  headerPadding: 0,
-                  contentPadding: 0,
-                },
-              },
+          <Collapse
+            ghost
+            expandIconPosition="end"
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
             }}
-          >
-            <Collapse
-              ghost
-              expandIconPosition="end"
-              style={{
-                backgroundColor: "transparent",
-                border: "none",
-              }}
-              items={collapseItems}
-            />
-          </ConfigProvider>
+            items={collapseItems}
+          />
         )}
       </Space>
     </Card>
