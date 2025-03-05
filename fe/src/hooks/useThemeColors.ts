@@ -1,6 +1,6 @@
-import { useAppSelector } from "@/hooks/useAppStore.ts";
-import { selectThemeMode } from "@/store/slice/appSlice.ts";
-import { themeColors } from "@/theme/colors.ts";
+import { useAppSelector } from "@/hooks/useAppStore";
+import { selectThemeMode } from "@/store/slices/appSlice";
+import { themeColors } from "@/theme/colors";
 import { ThemeMode } from "@/types/theme";
 
 export const getThemeColors = (themeMode: ThemeMode) => {

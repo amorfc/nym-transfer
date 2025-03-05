@@ -1,6 +1,6 @@
 import { Card, CardProps } from "antd";
 import React from "react";
-import { useThemeColors } from "@/hooks/useThemeColors.ts";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import { useSelectNymClient } from "@/hooks/store/useSelectNymClient";
 import TransitionWrapper from "@/components/animation/TransitionWrapper";
 import { LoadingLottie } from "@/components/lotties/LoadingLottie";

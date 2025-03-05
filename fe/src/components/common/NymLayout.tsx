@@ -1,6 +1,6 @@
 import { Layout, LayoutProps } from "antd";
 import React from "react";
-import { useThemeColors } from "@/hooks/useThemeColors.ts";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
 interface NymLayoutProps extends LayoutProps {
   children: React.ReactNode;

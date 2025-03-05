@@ -1,5 +1,5 @@
 import React from "react";
-import { useThemeColors } from "@/hooks/useThemeColors.ts";
+import { useThemeColors } from "@/hooks/useThemeColors";
 import NymText from "./NymText";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 

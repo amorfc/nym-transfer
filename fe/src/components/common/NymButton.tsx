@@ -1,7 +1,7 @@
 import { Button, ButtonProps, ConfigProvider } from "antd";
 import React from "react";
 import { useAppSelector } from "@/hooks/useAppStore";
-import { selectThemeMode } from "@/store/slice/appSlice";
+import { selectThemeMode } from "@/store/slices/appSlice";
 import { ThemeMode } from "@/types/theme";
 import { useThemeColors } from "@/hooks/useThemeColors";
 

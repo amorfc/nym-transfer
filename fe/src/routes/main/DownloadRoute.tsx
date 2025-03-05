@@ -8,19 +8,14 @@ import DownloadSuccessContent from "@/components/download/DownloadSuccessContent
 
 import { ROUTES } from "@/routes/ROUTES";
 import { useFileDownload } from "@/hooks/file/useFileDownload";
+import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 
 const DownloadRoute = () => {
   const params = useParams();
   const path = params["*"] ?? "";
-
-  const {
-    fileInfo,
-    isLoading,
-    isError,
-    handleDownload,
-    downloadState,
-    goToUpload,
-  } = useFileDownload(path);
+  const { goToUpload } = useAppNavigation();
+  const { fileInfo, isLoading, isError, handleDownload, downloadState } =
+    useFileDownload(path);
 
   const renderContent = () => {
     if (isLoading) {

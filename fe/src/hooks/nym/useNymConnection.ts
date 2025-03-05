@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useKeepAliveNymClientMutation } from "@/store/api/nymApi";
 import { useAppDispatch } from "@/hooks/useAppStore";
-import { setIsConnected, setIsConnecting } from "@/store/slice/nymClientSlice";
+import { setIsConnected, setIsConnecting } from "@/store/slices/nymClientSlice";
 import { useSelectNymClient } from "../store/useSelectNymClient";
 
 export const useNymConnection = () => {

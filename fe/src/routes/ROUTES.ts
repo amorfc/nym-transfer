@@ -7,6 +7,8 @@ export const ROUTES = {
   NOT_FOUND: "*", // Wildcard route for unknown paths
 };
 
+export type RouteKey = keyof typeof ROUTES;
+
 /**
  * Utility function to replace dynamic route parameters.
  */

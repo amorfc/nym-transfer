@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "@/store/store.ts";
-import { ThemeMode } from "@/types/theme.ts";
+import { RootState } from "@/store/store";
+import { ThemeMode } from "@/types/theme";
 import uuid4 from "uuid4";
 import { storage } from "@/utils/storage";
 

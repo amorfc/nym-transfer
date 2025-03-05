@@ -1,7 +1,7 @@
 import { ThemeConfig } from "antd";
-import { ThemeColors, themeColors } from "./colors.ts";
-import { useAppSelector } from "@/hooks/useAppStore.ts";
-import { selectThemeMode } from "@/store/slice/appSlice.ts";
+import { ThemeColors, themeColors } from "./colors";
+import { useAppSelector } from "@/hooks/useAppStore";
+import { selectThemeMode } from "@/store/slices/appSlice";
 
 const getAntdTheme = (colors: ThemeColors): ThemeConfig => ({
   token: {

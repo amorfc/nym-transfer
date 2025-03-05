@@ -9,13 +9,13 @@ import {
 } from "@/service/request/UploadMixnetRequest";
 import { DownloadMixnetResponseData } from "@/service/response/DownloadMixnetResponse";
 import { UploadMixnetResponseData } from "@/service/response/UploadMixnetResponse";
-import { selectUserId } from "@/store/slice/appSlice";
+import { selectUserId } from "@/store/slices/appSlice";
 import {
   selectNymClientState,
   setIsConnected,
   setIsConnecting,
   setSelfAddress,
-} from "@/store/slice/nymClientSlice";
+} from "@/store/slices/nymClientSlice";
 import { RootState } from "@/store/store";
 import { notifyWarning } from "@/components/toast/toast";
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";

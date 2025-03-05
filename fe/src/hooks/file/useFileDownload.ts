@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from "react";
-import { useAppNavigation } from "@/hooks/navigation/useAppNavigation";
 import { useNymClientStatus } from "@/hooks/store/useNymClientStatus";
 import {
   useDownloadFileMutation,
@@ -8,7 +7,6 @@ import {
 import { downloadFileToLocal } from "@/utils/fileUtils";
 
 export const useFileDownload = (initialPath: string) => {
-  const { goToUpload } = useAppNavigation();
   const { isNymClientReady } = useNymClientStatus();
 
   const [downloadState, setDownloadState] = useState({
@@ -80,6 +78,5 @@ export const useFileDownload = (initialPath: string) => {
     isError,
     handleDownload,
     downloadState,
-    goToUpload,
   };
 };

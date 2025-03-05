@@ -1,7 +1,7 @@
 import {
   selectMaxFileCount,
   selectMultipleFiles,
-} from "@/store/slice/appSlice";
+} from "@/store/slices/appSlice";
 import { useAppSelector } from "@/hooks/useAppStore";
 
 export const useFileUploadConfig = () => {

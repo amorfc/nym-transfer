@@ -1,7 +1,7 @@
 import React from "react";
-import { useAppDispatch, useAppSelector } from "@/hooks/useAppStore.ts";
-import { selectThemeMode, toggleTheme } from "@/store/slice/appSlice.ts";
-import { ThemeMode } from "@/types/theme.ts";
+import { useAppDispatch, useAppSelector } from "@/hooks/useAppStore";
+import { selectThemeMode, toggleTheme } from "@/store/slices/appSlice";
+import { ThemeMode } from "@/types/theme";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import NymButton from "@/components/common/NymButton";
 
