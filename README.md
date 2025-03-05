@@ -26,19 +26,25 @@ To run this application, follow these steps:
 
    - Please use this [doc for be](https://github.com/amorfc/nym-transfer/tree/stable/be)
 
-5. **Run the Frontend Application**:
-   - Navigate to the `fe` folder in your terminal and run the following commands:
+## 5. Run the Frontend Application
+
+1. **Set Up Environment Variables**  
+   - Copy the `.env.example` file in the `fe` folder and rename it to `.env`.  
+   - In your new `.env` file, you will see entries for:
+     - **`VITE_NYM_ENTRY_CLIENT_WS_URL`** – This should point to the local Nym client’s WebSocket URL (e.g., `ws://localhost:1977` if that’s where your client is running).  
+     - **`VITE_NYM_BACKEND_CLIENT_ADDRESS_BYTES`** – This must be set to the byte array address of your Nym client that’s connected to the backend, allowing your local client to communicate. (This will be fixed this is just a workaround)
+
+2. **Install Dependencies and Start the App**  
+   - Open a terminal, navigate to the `fe` folder, and run:
      ```bash
      yarn && yarn run dev
      ```
-   - After the application starts, open the URL displayed in the terminal output.
-   - In the codebase, go to the `App.tsx` file and find the `recipientAddress` variable at the top of the file. Replace its value with your `client address` from the earlier output.
-   - Once updated, start the connection in the frontend application and check the browser console for any errors.
-   - Finally, send a message through the frontend. You should see the output in the NodeJS process console.
+   - After the development server starts, **keep your browser console open** to monitor logs or potential errors.
 
-## Disclaimer
+3. **Confirm Connectivity**  
+   - Once you load the frontend in your browser, it will attempt to connect to your local Nym client using the environment variables. Check the console for any connection errors or success messages.
 
-**Please do not use the Java instance yet as it is not ready. Use the `jsbe` file for now.**
+---
 
 ## Example Commands
 
@@ -47,4 +53,7 @@ To run this application, follow these steps:
 ```sh
 ./nym-client init --id your-client-id
 ./nym-client run --id your-client-id
+```
+```bash
+yarn && yarn run dev
 ```
