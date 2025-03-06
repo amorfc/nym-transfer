@@ -53,6 +53,12 @@ This guide explains how to set up and run the Nym client, the backend applicatio
 
 ## 4. Benchmark Testing (Development Mode Only)
 
+**Example**
+
+
+https://github.com/user-attachments/assets/ab66d38f-bbe1-4c23-970d-b8dd1c68a3b6
+
+
 A benchmark feature is included to measure file upload and download performance. This feature is **only available** when running in development mode.
 
 1. **Run the Frontend in Dev Mode**  
